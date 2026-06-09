@@ -10,78 +10,93 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  final _targetController = TextEditingController(text: '127.0.0.1');
-  String _output = 'Project Zion Ready.\nType "help" for commands.\n';
+  final _targetController = TextEditingController(text: '192.168.1.1');
+  String _output = '';
   bool _loading = false;
-  bool _aiActive = false;
 
   Future<void> _execute(String command) async {
     setState(() => _loading = true);
     final service = ref.read(unifiedCoreProvider);
     final result = await service.execute(command, target: _targetController.text);
     setState(() { _output = result; _loading = false; });
-    if (command == 'start_ai') setState(() => _aiActive = true);
-    if (command == 'stop_ai') setState(() => _aiActive = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Project Zion', style: TextStyle(color: Colors.green)),
-        backgroundColor: Colors.black,
+        title: const Text('Project Zion'),
         actions: [
-          if (_aiActive)
-            const Padding(padding: EdgeInsets.all(12), child: Icon(Icons.circle, color: Colors.green, size: 12)),
+          IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.account_circle_outlined), onPressed: () {}),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // حقل الهدف
             TextField(
               controller: _targetController,
-              style: const TextStyle(color: Colors.green, fontFamily: 'monospace'),
-              decoration: const InputDecoration(labelText: 'Target', labelStyle: TextStyle(color: Colors.green), border: OutlineInputBorder()),
+              style: const TextStyle(color: Color(0xFF00FF41), fontFamily: 'monospace'),
+              decoration: const InputDecoration(
+                labelText: 'عنوان الهدف (IP / URL)',
+                prefixIcon: Icon(Icons.language, color: Color(0xFF00FF41)),
+              ),
             ),
+            const SizedBox(height: 16),
+
+            // أزرار سريعة
+            const Text('⚡ أوامر سريعة', style: TextStyle(color: Color(0xFF00FF41), fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            if (_loading) const LinearProgressIndicator(color: Colors.green),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _quickBtn('فحص المنافذ', 'port_scan'),
+                _quickBtn('Ping', 'ping'),
+                _quickBtn('DNS', 'dns_lookup'),
+                _quickBtn('HTTP Headers', 'http_headers'),
+                _quickBtn('معلومات النظام', 'system_info'),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // شريط التحميل
+            if (_loading) const LinearProgressIndicator(color: Color(0xFF00FF41)),
+            const SizedBox(height: 16),
+
+            // منطقة الإخراج (ترمينال مصغر)
+            const Text('📟 المخرجات', style: TextStyle(color: Color(0xFF00FF41), fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Expanded(
+            Container(
+              width: double.infinity,
+              height: 250,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0A0E0A),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF1A3A1A)),
+              ),
               child: SingleChildScrollView(
-                child: Text(_output, style: const TextStyle(color: Colors.green, fontFamily: 'monospace', fontSize: 12)),
+                child: Text(
+                  _output.isNotEmpty ? _output : 'جاهز... \nاكتب أمر أو اضغط على أحد الأزرار أعلاه',
+                  style: const TextStyle(color: Color(0xFF00FF41), fontFamily: 'monospace', fontSize: 13),
+                ),
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              _btn('AI On', 'start_ai', Colors.green),
-              _btn('AI Off', 'stop_ai', Colors.red),
-              _btn('Status', 'ai_status', Colors.blue),
-              _btn('Full', 'full_mission', Colors.orange),
-              _btn('Stealth', 'stealth_on', Colors.purple),
-              _btn('OSINT', 'osint', Colors.cyan),
-              _btn('Help', 'help', Colors.grey),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
-  Widget _btn(String label, String command, Color color) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4),
-    child: ElevatedButton(
-      style: ElevatedButton.styleFrom(backgroundColor: color.withOpacity(0.8)),
+  Widget _quickBtn(String label, String command) {
+    return ElevatedButton.icon(
       onPressed: () => _execute(command),
-      child: Text(label, style: const TextStyle(color: Colors.white)),
-    ),
-  );
+      icon: const Icon(Icons.play_arrow, size: 18),
+      label: Text(label, style: const TextStyle(fontSize: 13)),
+    );
+  }
 }
