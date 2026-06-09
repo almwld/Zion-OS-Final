@@ -1,90 +1,96 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:convert';
+import 'dart:math';
 import 'package:riverpod/riverpod.dart';
-import '../systems/ultimate_kali_loader_system.dart';
-import '../systems/ultimate_crypto_system.dart';
-import '../systems/ultimate_osint_system.dart';
 
 final unifiedCoreProvider = Provider<UnifiedCoreService>((ref) => UnifiedCoreService());
 
 class UnifiedCoreService {
-  final UltimateKaliLoaderSystem _kaliLoader = UltimateKaliLoaderSystem();
-  final UltimateCryptoSystem _crypto = UltimateCryptoSystem();
-  final UltimateOsintSystem _osint = UltimateOsintSystem();
-
   Future<String> execute(String command, {String? target, Map<String, String>? options}) async {
     try {
       switch (command) {
-        case 'nmap':
-          final result = await _kaliLoader.runNmap(target ?? '127.0.0.1', args: options?['args']);
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'msfconsole':
-          final result = await _kaliLoader.runMsfconsole(commands: options?['commands']);
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'sqlmap':
-          final result = await _kaliLoader.runSqlmap(target ?? 'http://localhost', args: options?['args']);
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'hydra':
-          final result = await _kaliLoader.runHydra(target ?? '127.0.0.1', options?['service'] ?? 'ssh', options?['username'] ?? 'root', options?['wordlist'] ?? '/usr/share/wordlists/rockyou.txt');
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'aircrack':
-          final result = await _kaliLoader.runAircrack(options?['file'] ?? '/tmp/capture.cap', wordlist: options?['wordlist']);
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'john':
-          final result = await _kaliLoader.runJohn(options?['hash'] ?? '/tmp/hash.txt', wordlist: options?['wordlist']);
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'nikto':
-          final result = await _kaliLoader.runNikto(target ?? 'http://localhost');
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'dirb':
-          final result = await _kaliLoader.runDirb(target ?? 'http://localhost');
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'wpscan':
-          final result = await _kaliLoader.runWpscan(target ?? 'http://localhost');
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'tshark':
-          final result = await _kaliLoader.runTshark(interface: options?['interface'], filter: options?['filter']);
-          return result['stdout'] ?? result['stderr'] ?? 'No output';
-        case 'tools':
-          final tools = await _kaliLoader.getInstalledTools();
-          return 'Installed tools: ${tools.length}\n${tools.take(50).join('\n')}...';
-        case 'sha256':
-          return _crypto.sha256(target ?? '');
-        case 'sha3':
-          return _crypto.sha3(target ?? '');
-        case 'gatherIpInfo':
-          final info = await _osint.gatherIpInfo(target ?? '8.8.8.8');
-          return info.toString();
-        case 'gatherEmailInfo':
-          final info = _osint.gatherEmailInfo(target ?? 'test@example.com');
-          return info.toString();
-        case 'searchSocialMedia':
-          final results = _osint.searchSocialMedia(target ?? 'testuser');
-          return results.toString();
+        case 'ping':
+          return await _ping(target ?? '127.0.0.1');
+        case 'port_scan':
+          return await _portScan(target ?? '127.0.0.1');
+        case 'dns_lookup':
+          return await _dnsLookup(target ?? 'google.com');
+        case 'http_headers':
+          return await _httpHeaders(target ?? 'http://google.com');
+        case 'system_info':
+          return _systemInfo();
         case 'help':
-          return _getHelpText();
+          return _helpText();
         default:
-          return 'Unknown command: $command';
+          return 'Unknown command: $command\nType "help" for commands.';
       }
     } catch (e) {
       return 'Error: $e';
     }
   }
 
-  String _getHelpText() => '''
+  Future<String> _ping(String target) async {
+    try {
+      final result = await Process.run('ping', ['-c', '4', target], runInShell: true);
+      return result.stdout.toString();
+    } catch (e) {
+      return 'Ping failed: $e';
+    }
+  }
+
+  Future<String> _portScan(String target) async {
+    final ports = [21, 22, 23, 25, 53, 80, 443, 8080, 8443];
+    final openPorts = <String>[];
+    for (final port in ports) {
+      try {
+        final socket = await Socket.connect(target, port, timeout: const Duration(milliseconds: 500));
+        openPorts.add('$port (open)');
+        socket.destroy();
+      } catch (_) {}
+    }
+    return 'Port scan on $target:\n${openPorts.isNotEmpty ? openPorts.join('\n') : "No open ports found"}';
+  }
+
+  Future<String> _dnsLookup(String domain) async {
+    try {
+      final addresses = await InternetAddress.lookup(domain);
+      return 'DNS Lookup for $domain:\n${addresses.map((a) => '${a.address} (${a.type.name})').join('\n')}';
+    } catch (e) {
+      return 'DNS Lookup failed: $e';
+    }
+  }
+
+  Future<String> _httpHeaders(String url) async {
+    try {
+      final client = HttpClient();
+      final request = await client.getUrl(Uri.parse(url));
+      final response = await request.close();
+      final headers = response.headers;
+      final output = StringBuffer();
+      headers.forEach((name, values) => output.writeln('$name: ${values.join(', ')}'));
+      return 'HTTP Headers for $url:\n$output';
+    } catch (e) {
+      return 'HTTP Headers failed: $e';
+    }
+  }
+
+  String _systemInfo() => '''
+System Information:
+  OS: ${Platform.operatingSystem}
+  Version: ${Platform.operatingSystemVersion}
+  CPU: ${Platform.numberOfProcessors} cores
+  Dart: ${Platform.version}
+''';
+
+  String _helpText() => '''
 === PROJECT ZION ===
-nmap <target>    - Network scan
-msfconsole       - Metasploit
-sqlmap <target>  - SQL inject
-hydra <target>   - Brute force
-aircrack <file>  - WiFi crack
-john <hash>      - John Ripper
-nikto <target>   - Web scan
-dirb <target>    - Dir brute
-wpscan <target>  - WP scan
-tshark           - Sniffer
-tools            - Kali tools
-sha256 <text>    - Hash
-sha3 <text>      - Hash
-help             - Help
+ping <ip>        - Ping host
+port_scan <ip>   - Scan ports
+dns_lookup <d>   - DNS lookup
+http_headers <u> - HTTP headers
+system_info      - System info
+help             - Show help
 ==================
 ''';
 }
