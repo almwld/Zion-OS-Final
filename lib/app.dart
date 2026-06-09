@@ -90,8 +90,8 @@ class _CosmicMainScreenState extends State<CosmicMainScreen> with TickerProvider
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          border: GradientBoxBorder(
-            gradient: LinearGradient(colors: [Colors.transparent, const Color(0xFF00FF41).withOpacity(0.3), Colors.transparent]),
+          border: Border(
+            
           ),
         ),
         child: BottomNavigationBar(
