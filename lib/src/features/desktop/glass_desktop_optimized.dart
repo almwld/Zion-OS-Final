@@ -513,3 +513,6 @@ class DesktopWindow {
     required this.isMaximized,
   }) : savedSize = size, savedPosition = position;
 }
+
+// إضافة الأيقونة الجديدة في قائمة desktop icons
+{'icon': Icons.analytics, 'label': 'Metrics', 'widget': const ZionMetricsDashboard(), 'color': Colors.cyan},
