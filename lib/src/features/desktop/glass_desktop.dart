@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/theme_engine.dart';
-import '../../widgets/zion_widgets.dart';
 import '../settings/zion_settings.dart';
 import '../wifi/zion_wifi_panel.dart';
 import '../../../cosmic_terminal.dart';
@@ -13,16 +11,16 @@ class GlassDesktop extends StatefulWidget {
 }
 
 class _GlassDesktopState extends State<GlassDesktop> {
-  final ThemeEngine _theme = ThemeEngine();
-  final List<GlassWindow> _windows = [];
+  final List<DesktopWindow> _windows = [];
   int _nextWindowId = 1;
   DateTime _currentTime = DateTime.now();
   bool _menuOpen = false;
+  Offset? _draggingOffset;
+  int? _draggingWindowId;
 
   @override
   void initState() {
     super.initState();
-    _theme.loadSettings();
     _updateTime();
   }
 
@@ -35,20 +33,58 @@ class _GlassDesktopState extends State<GlassDesktop> {
     });
   }
 
-  void _openWindow(String title, Widget content, {Size size = const Size(900, 700)}) {
+  void _openWindow(String title, Widget content, {Size size = const Size(800, 600)}) {
     setState(() {
-      _windows.add(GlassWindow(
+      _windows.add(DesktopWindow(
         id: _nextWindowId++,
         title: title,
         content: content,
         position: Offset(50 + _windows.length * 30, 50 + _windows.length * 30),
         size: size,
+        isMinimized: false,
+        isMaximized: false,
       ));
     });
   }
 
   void _closeWindow(int id) {
     setState(() => _windows.removeWhere((w) => w.id == id));
+  }
+
+  void _minimizeWindow(int id) {
+    setState(() {
+      final index = _windows.indexWhere((w) => w.id == id);
+      if (index != -1) {
+        _windows[index].isMinimized = true;
+      }
+    });
+  }
+
+  void _restoreWindow(int id) {
+    setState(() {
+      final index = _windows.indexWhere((w) => w.id == id);
+      if (index != -1) {
+        _windows[index].isMinimized = false;
+      }
+    });
+  }
+
+  void _maximizeWindow(int id) {
+    setState(() {
+      final index = _windows.indexWhere((w) => w.id == id);
+      if (index != -1) {
+        _windows[index].isMaximized = !_windows[index].isMaximized;
+        if (_windows[index].isMaximized) {
+          _windows[index].savedSize = _windows[index].size;
+          _windows[index].savedPosition = _windows[index].position;
+          _windows[index].size = const Size(double.infinity, double.infinity);
+          _windows[index].position = Offset.zero;
+        } else {
+          _windows[index].size = _windows[index].savedSize;
+          _windows[index].position = _windows[index].savedPosition;
+        }
+      }
+    });
   }
 
   void _bringToFront(int id) {
@@ -61,6 +97,28 @@ class _GlassDesktopState extends State<GlassDesktop> {
     }
   }
 
+  void _startDragging(int id, Offset startPosition) {
+    _draggingWindowId = id;
+    _draggingOffset = startPosition;
+  }
+
+  void _updateDragging(Offset newPosition) {
+    if (_draggingWindowId != null && _draggingOffset != null) {
+      final index = _windows.indexWhere((w) => w.id == _draggingWindowId);
+      if (index != -1 && !_windows[index].isMaximized) {
+        setState(() {
+          _windows[index].position += newPosition - _draggingOffset!;
+          _draggingOffset = newPosition;
+        });
+      }
+    }
+  }
+
+  void _stopDragging() {
+    _draggingWindowId = null;
+    _draggingOffset = null;
+  }
+
   void _toggleMenu() {
     setState(() => _menuOpen = !_menuOpen);
   }
@@ -68,124 +126,35 @@ class _GlassDesktopState extends State<GlassDesktop> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(gradient: _theme.getGradientBackground()),
-        child: Stack(
-          children: [
-            _buildMatrixRain(),
-            _buildDesktopIcons(),
-            ..._windows.map((w) => _buildGlassWindow(w)),
-            _buildStartMenu(),
-            _buildTaskbar(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMatrixRain() {
-    return ShaderMask(
-      shaderCallback: (rect) => LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
-      ).createShader(rect),
-      blendMode: BlendMode.darken,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [_theme.accent.withOpacity(0.1), Colors.transparent],
-          ),
-        ),
-        child: const Center(
-          child: ZionGradientText(
-            text: 'ZION OS\nv3.0',
-            fontSize: 64,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassWindow(GlassWindow w) {
-    return Positioned(
-      left: w.position.dx,
-      top: w.position.dy,
-      child: GestureDetector(
-        onTap: () => _bringToFront(w.id),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: w.size.width,
-          height: w.size.height,
-          decoration: BoxDecoration(
-            color: _theme.background.withOpacity(0.85),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _theme.accent.withOpacity(0.3), width: 1),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20),
-              BoxShadow(color: _theme.accent.withOpacity(0.1), blurRadius: 30),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Column(
-              children: [
-                _buildWindowTitleBar(w),
-                Expanded(child: w.content),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWindowTitleBar(GlassWindow w) {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: _theme.accent.withOpacity(0.1),
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        border: Border(bottom: BorderSide(color: _theme.accent.withOpacity(0.2))),
-      ),
-      child: Row(
+      backgroundColor: Colors.black,
+      body: Stack(
         children: [
-          Row(
-            children: [
-              _buildWindowButton(Colors.red, () => _closeWindow(w.id)),
-              const SizedBox(width: 8),
-              _buildWindowButton(Colors.amber, () {}),
-              const SizedBox(width: 8),
-              _buildWindowButton(Colors.green, () {}),
-            ],
-          ),
-          const SizedBox(width: 16),
-          Text(w.title, style: TextStyle(color: _theme.accent, fontSize: 14)),
-          const Spacer(),
-          ZionIcon(icon: Icons.refresh, size: 16, onTap: () {}),
-          const SizedBox(width: 8),
-          ZionIcon(icon: Icons.fullscreen, size: 16, onTap: () {}),
-          const SizedBox(width: 8),
-          ZionIcon(icon: Icons.close, size: 16, onTap: () => _closeWindow(w.id)),
+          _buildBackground(),
+          _buildDesktopIcons(),
+          ..._windows.where((w) => !w.isMinimized).map((w) => _buildWindow(w)),
+          if (_menuOpen) _buildStartMenu(),
+          _buildTaskbar(),
         ],
       ),
     );
   }
 
-  Widget _buildWindowButton(Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 14,
-        height: 14,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: color.withOpacity(0.5), blurRadius: 4)],
+  Widget _buildBackground() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF00FF41), Colors.black],
+        ),
+      ),
+      child: const Center(
+        child: Text(
+          'ZION OS\nv3.0',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold, shadows: [
+            Shadow(color: Color(0xFF00FF41), blurRadius: 10),
+          ]),
         ),
       ),
     );
@@ -214,14 +183,13 @@ class _GlassDesktopState extends State<GlassDesktop> {
                 child: Column(
                   children: [
                     Container(
-                      width: 60,
-                      height: 60,
+                      width: 60, height: 60,
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.7),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: _theme.accent, width: 1),
+                        border: Border.all(color: const Color(0xFF00FF41), width: 1),
                       ),
-                      child: Icon(icon['icon'] as IconData, color: _theme.accent, size: 32),
+                      child: Icon(icon['icon'] as IconData, color: const Color(0xFF00FF41), size: 32),
                     ),
                     const SizedBox(height: 8),
                     Text(icon['label'] as String, style: const TextStyle(color: Colors.white70, fontSize: 11)),
@@ -235,45 +203,124 @@ class _GlassDesktopState extends State<GlassDesktop> {
     );
   }
 
-  Widget _buildStartMenu() {
-    if (!_menuOpen) return const SizedBox.shrink();
+  Widget _buildWindow(DesktopWindow w) {
+    return Positioned(
+      left: w.position.dx,
+      top: w.position.dy,
+      child: GestureDetector(
+        onTap: () => _bringToFront(w.id),
+        onPanStart: (details) => _startDragging(w.id, details.localPosition),
+        onPanUpdate: (details) => _updateDragging(details.localPosition),
+        onPanEnd: (_) => _stopDragging(),
+        child: Container(
+          width: w.isMaximized ? MediaQuery.of(context).size.width - 40 : w.size.width,
+          height: w.isMaximized ? MediaQuery.of(context).size.height - 100 : w.size.height,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.95),
+            borderRadius: BorderRadius.circular(w.isMaximized ? 0 : 12),
+            border: Border.all(color: const Color(0xFF00FF41), width: 1),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10)],
+          ),
+          child: Column(
+            children: [
+              _buildTitleBar(w),
+              Expanded(child: w.content),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
+  Widget _buildTitleBar(DesktopWindow w) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00FF41).withOpacity(0.1),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(w.isMaximized ? 0 : 12),
+          topRight: Radius.circular(w.isMaximized ? 0 : 12),
+        ),
+        border: Border(bottom: BorderSide(color: const Color(0xFF00FF41).withOpacity(0.3))),
+      ),
+      child: Row(
+        children: [
+          Row(
+            children: [
+              _buildWindowButton(Colors.red, () => _closeWindow(w.id)),
+              const SizedBox(width: 8),
+              _buildWindowButton(Colors.amber, () => _minimizeWindow(w.id)),
+              const SizedBox(width: 8),
+              _buildWindowButton(Colors.green, () => _maximizeWindow(w.id)),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              w.title,
+              style: const TextStyle(color: Color(0xFF00FF41), fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 16, color: Colors.white),
+            onPressed: () => _closeWindow(w.id),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWindowButton(Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+    );
+  }
+
+  Widget _buildStartMenu() {
     return Positioned(
       bottom: 70,
       left: 16,
       child: Container(
         width: 280,
         decoration: BoxDecoration(
-          color: _theme.background.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _theme.accent),
+          color: Colors.black.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF00FF41)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: _theme.accent.withOpacity(0.1),
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+              decoration: const BoxDecoration(
+                color: Color(0xFF00FF41),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
               ),
-              child: Row(
-                children: const [
-                  CircleAvatar(radius: 24, backgroundColor: Colors.green, child: Icon(Icons.person, color: Colors.white)),
+              child: const Row(
+                children: [
+                  CircleAvatar(radius: 24, backgroundColor: Colors.white, child: Icon(Icons.person, color: Colors.black)),
                   SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Zion User', style: TextStyle(color: Colors.white)),
+                      Text('Zion User', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       Text('zion@os', style: TextStyle(color: Colors.white70)),
                     ],
                   ),
                 ],
               ),
             ),
-            const Divider(color: Colors.white24),
             _buildMenuItem(Icons.terminal, 'Terminal', () => _openWindow('Terminal', const CosmicTerminal())),
-            _buildMenuItem(Icons.wifi, 'WiFi', () => _openWindow('WiFi', const ZionWifiPanel())),
+            _buildMenuItem(Icons.wifi, 'WiFi Panel', () => _openWindow('WiFi', const ZionWifiPanel())),
             _buildMenuItem(Icons.psychology, 'SI Agent', () => _openWindow('SI Agent', const Center(child: Text('SI Agent')))),
             _buildMenuItem(Icons.settings, 'Settings', () => _openWindow('Settings', const ZionSettings())),
             const Divider(color: Colors.white24),
@@ -286,38 +333,54 @@ class _GlassDesktopState extends State<GlassDesktop> {
 
   Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap, {Color? color}) {
     return ListTile(
-      leading: Icon(icon, color: _theme.accent),
+      leading: Icon(icon, color: const Color(0xFF00FF41)),
       title: Text(title, style: TextStyle(color: color ?? Colors.white)),
-      onTap: () {
-        _toggleMenu();
-        onTap();
-      },
+      onTap: onTap,
     );
   }
 
   Widget _buildTaskbar() {
     return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
+      bottom: 0, left: 0, right: 0,
       child: Container(
         height: 50,
         decoration: BoxDecoration(
-          color: _theme.background.withOpacity(0.85),
-          border: Border(top: BorderSide(color: _theme.accent.withOpacity(0.3))),
+          color: Colors.black.withOpacity(0.9),
+          border: Border(top: BorderSide(color: const Color(0xFF00FF41).withOpacity(0.3))),
         ),
         child: Row(
           children: [
             GestureDetector(
               onTap: _toggleMenu,
               child: Container(
-                width: 60,
-                height: 50,
-                decoration: BoxDecoration(gradient: LinearGradient(colors: [_theme.accent, _theme.accent.withOpacity(0.7)])),
-                child: const Icon(Icons.menu, color: Colors.white, size: 28),
+                width: 60, height: 50,
+                decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF00FF41), Colors.black])),
+                child: const Icon(Icons.menu, color: Colors.white, size: 24),
               ),
             ),
-            const Expanded(child: SizedBox()),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _windows.map((w) => GestureDetector(
+                    onTap: () => w.isMinimized ? _restoreWindow(w.id) : _bringToFront(w.id),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      height: 50,
+                      decoration: BoxDecoration(
+                        border: Border(left: BorderSide(color: Colors.white.withOpacity(0.1))),
+                      ),
+                      child: Center(
+                        child: Text(
+                          w.title,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  )).toList(),
+                ),
+              ),
+            ),
             _buildSystemTray(),
             _buildClock(),
           ],
@@ -328,14 +391,14 @@ class _GlassDesktopState extends State<GlassDesktop> {
 
   Widget _buildSystemTray() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
-        children: [
-          ZionIcon(icon: Icons.battery_full, size: 18),
-          const SizedBox(width: 8),
-          ZionIcon(icon: Icons.wifi, size: 18),
-          const SizedBox(width: 8),
-          ZionIcon(icon: Icons.volume_up, size: 18),
+        children: const [
+          Icon(Icons.battery_full, color: Colors.white, size: 18),
+          SizedBox(width: 8),
+          Icon(Icons.wifi, color: Colors.white, size: 18),
+          SizedBox(width: 8),
+          Icon(Icons.volume_up, color: Colors.white, size: 18),
         ],
       ),
     );
@@ -358,11 +421,24 @@ class _GlassDesktopState extends State<GlassDesktop> {
   String _formatDate(DateTime time) => '${time.day}/${time.month}/${time.year}';
 }
 
-class GlassWindow {
+class DesktopWindow {
   final int id;
   final String title;
   final Widget content;
   Offset position;
-  final Size size;
-  GlassWindow({required this.id, required this.title, required this.content, required this.position, required this.size});
+  Size size;
+  Size savedSize;
+  Offset savedPosition;
+  bool isMinimized;
+  bool isMaximized;
+
+  DesktopWindow({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.position,
+    required this.size,
+    required this.isMinimized,
+    required this.isMaximized,
+  }) : savedSize = size, savedPosition = position;
 }
