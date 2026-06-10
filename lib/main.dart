@@ -335,3 +335,15 @@ DesktopIconItem(
   )),
 ),
 */
+
+import 'src/core/si/zion_si_agent.dart';
+
+// إضافة في بداية الـ main
+Future<void> _initSIAgent() async {
+  final siAgent = ZionSIAgent();
+  await siAgent.activate();
+  print('🧠 Zion SI Agent is now active and learning');
+}
+
+// استدعاءها بعد runApp
+// _initSIAgent();
