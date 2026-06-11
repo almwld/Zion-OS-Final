@@ -155,47 +155,42 @@ class _SettingsAppState extends State<SettingsApp> {
       ),
       body: ListView(
         children: [
-          // Appearance Section
           _buildSectionHeader(Icons.palette, 'Appearance'),
           _buildThemeSelector(),
           _buildLanguageSelector(),
           _buildFontSizeSlider(),
-          _buildSwitchTile(Icons.dark_mode, 'Dark Mode', _darkMode, (v) {
+          _buildSwitchTile('Dark Mode', _darkMode, (v) {
             setState(() { _darkMode = v; _saveSetting('dark_mode', v); });
           }),
           
-          // Behavior Section
           _buildSectionHeader(Icons.tune, 'Behavior'),
-          _buildSwitchTile(Icons.notifications, 'Notifications', _notifications, (v) {
+          _buildSwitchTile('Notifications', _notifications, (v) {
             setState(() { _notifications = v; _saveSetting('notifications', v); });
           }),
-          _buildSwitchTile(Icons.volume_up, 'Sound Effects', _soundEffects, (v) {
+          _buildSwitchTile('Sound Effects', _soundEffects, (v) {
             setState(() { _soundEffects = v; _saveSetting('sound_effects', v); });
           }),
-          _buildSwitchTile(Icons.vibration, 'Vibration', _vibration, (v) {
+          _buildSwitchTile('Vibration', _vibration, (v) {
             setState(() { _vibration = v; _saveSetting('vibration', v); });
           }),
-          _buildSwitchTile(Icons.update, 'Auto Update', _autoUpdate, (v) {
+          _buildSwitchTile('Auto Update', _autoUpdate, (v) {
             setState(() { _autoUpdate = v; _saveSetting('auto_update', v); });
           }),
-          _buildSwitchTile(Icons.visibility_off, 'Stealth Mode', _stealthMode, (v) {
+          _buildSwitchTile('Stealth Mode', _stealthMode, (v) {
             setState(() { _stealthMode = v; _saveSetting('stealth_mode', v); });
           }),
           
-          // Animation Speed
           _buildSliderTile('Animation Speed', _animationSpeed, 0.5, 2.0, (v) {
             setState(() { _animationSpeed = v; _saveSetting('animation_speed', v); });
           }),
           
-          // Security Section
           _buildSectionHeader(Icons.security, 'Security'),
           _buildInfoTile(Icons.lock, 'Change PIN', 'Update security PIN', _showChangePinDialog),
           _buildInfoTile(Icons.fingerprint, 'Biometric', 'Enable fingerprint unlock', () {}),
-          _buildInfoTile(Icons.encryption, 'Encryption', 'AES-256 Active', () {}),
+          _buildInfoTile(Icons.security, 'Encryption', 'AES-256 Active', () {}),
           
-          // About Section
           _buildSectionHeader(Icons.info, 'About'),
-          _buildInfoTile(Icons.version, 'Version', 'Zion OS 4.0.0', () {}),
+          _buildInfoTile(Icons.info, 'Version', 'Zion OS 4.0.0', () {}),
           _buildInfoTile(Icons.build, 'Build', '2027.06.11', () {}),
           _buildInfoTile(Icons.code, 'Developer', 'Zion Security Team', _showAboutDialog),
           
