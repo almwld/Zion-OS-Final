@@ -28,6 +28,7 @@ import 'apps/unit_converter.dart';
 import 'apps/battery_saver.dart';
 import 'apps/gallery_app.dart';
 import 'apps/video_player_app.dart';
+import 'apps/alarms_clock.dart';
 import 'apps/backup_manager.dart';
 import 'apps/cleaner.dart';
 import 'apps/app_lock.dart';
@@ -83,6 +84,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
     {"name": "BATTERY", "icon": Icons.battery_charging_full, "category": "TOOLS", "screen": const BatterySaverApp()},
     {"name": "GALLERY", "icon": Icons.photo_library, "category": "TOOLS", "screen": const GalleryApp()},
     {"name": "VIDEO", "icon": Icons.play_circle_filled, "category": "TOOLS", "screen": const VideoPlayerApp()},
+    {"name": "CLOCK", "icon": Icons.access_time, "category": "TOOLS", "screen": const AlarmsClockApp()},
     {"name": "BACKUP", "icon": Icons.backup, "category": "TOOLS", "screen": const BackupManagerApp()},
     {"name": "CLEANER", "icon": Icons.cleaning_services, "category": "TOOLS", "screen": const CleanerApp()},
     {"name": "APP LOCK", "icon": Icons.lock, "category": "TOOLS", "screen": const AppLockApp()},
