@@ -51,6 +51,9 @@ class _SettingsAppState extends State<SettingsApp> {
     if (value is String) await prefs.setString(key, value);
     if (value is double) await prefs.setDouble(key, value);
     if (value is int) await prefs.setInt(key, value);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$key saved'), backgroundColor: Color(0xFF00BCD4)),
+    );
   }
 
   void _showAboutDialog() {
@@ -186,15 +189,59 @@ class _SettingsAppState extends State<SettingsApp> {
           
           _buildSectionHeader(Icons.security, 'Security'),
           _buildInfoTile(Icons.lock, 'Change PIN', 'Update security PIN', _showChangePinDialog),
-          _buildInfoTile(Icons.fingerprint, 'Biometric', 'Enable fingerprint unlock', () {}),
-          _buildInfoTile(Icons.security, 'Encryption', 'AES-256 Active', () {}),
+          _buildInfoTile(Icons.fingerprint, 'Biometric', 'Enable fingerprint unlock', () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Biometric setup coming soon'), backgroundColor: Color(0xFF00BCD4)),
+            );
+          }),
+          _buildInfoTile(Icons.security, 'Encryption', 'AES-256 Active', () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Encryption is active'), backgroundColor: Color(0xFF00BCD4)),
+            );
+          }),
           
           _buildSectionHeader(Icons.info, 'About'),
-          _buildInfoTile(Icons.info, 'Version', 'Zion OS 4.0.0', () {}),
+          _buildInfoTile(Icons.info, 'Version', 'Zion OS 4.0.0', _showAboutDialog),
           _buildInfoTile(Icons.build, 'Build', '2027.06.11', () {}),
           _buildInfoTile(Icons.code, 'Developer', 'Zion Security Team', _showAboutDialog),
           
           const SizedBox(height: 20),
+          
+          // Reset Button
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final confirmed = await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Reset Settings', style: TextStyle(color: Color(0xFF00BCD4))),
+                    content: const Text('Reset all settings to default?', style: TextStyle(color: Colors.white)),
+                    backgroundColor: Colors.black,
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Reset', style: TextStyle(color: Colors.red))),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear();
+                  await _loadSettings();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Settings reset to default'), backgroundColor: Color(0xFF00BCD4)),
+                  );
+                }
+              },
+              icon: const Icon(Icons.restore),
+              label: const Text('Reset to Default'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
         ],
       ),
     );
