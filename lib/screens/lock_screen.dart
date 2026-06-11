@@ -232,7 +232,7 @@ class _LockScreenState extends State<LockScreen> {
                                 _errorMessage,
                                 style: const TextStyle(color: Colors.red, fontSize: 12),
                               ),
-                            ),
+                          ),
                           SizedBox(height: screenHeight * 0.04),
 
                           // Number Pad

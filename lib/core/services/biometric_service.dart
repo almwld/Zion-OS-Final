@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
 
-class BiometricService {
+class BiometricService extends ChangeNotifier {
   static final BiometricService _instance = BiometricService._internal();
   factory BiometricService() => _instance;
   BiometricService._internal();
@@ -21,9 +20,11 @@ class BiometricService {
       if (_isAvailable) {
         _availableBiometrics = await _localAuth.getAvailableBiometrics();
       }
+      notifyListeners();
       return _isAvailable;
     } catch (e) {
       _isAvailable = false;
+      notifyListeners();
       return false;
     }
   }
@@ -49,6 +50,7 @@ class BiometricService {
   bool get hasFingerprint => _availableBiometrics.contains(BiometricType.fingerprint);
   bool get hasFace => _availableBiometrics.contains(BiometricType.face);
   bool get hasIris => _availableBiometrics.contains(BiometricType.iris);
+  
   String get biometricType {
     if (hasFingerprint) return 'Fingerprint';
     if (hasFace) return 'Face ID';
