@@ -48,6 +48,7 @@ class ZionOS extends StatelessWidget {
         '/file_manager': (context) => const AdvancedFileManager(),
         '/browser': (context) => const AdvancedBrowser(),
         '/editor': (context) => const AdvancedEditor(),
+        '/notifications': (context) => const NotificationCenter(),
       },
     );
   }
