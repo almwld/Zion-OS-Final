@@ -7,6 +7,7 @@ import 'apps/crypto_tool.dart';
 import 'apps/stealth_mode.dart';
 import 'apps/settings_app.dart';
 import 'apps/file_manager.dart';
+import 'apps/file_manager.dart';
 import 'apps/password_cracker.dart';
 import 'apps/ddos_attack.dart';
 import 'apps/forensics.dart';
@@ -51,6 +52,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
     // Defense
     {"name": "STEALTH", "icon": Icons.visibility_off, "category": "DEFENSE", "screen": const StealthModeApp()},
     {"name": "SETTINGS", "icon": Icons.settings, "category": "TOOLS", "screen": const SettingsApp()},
+    {"name": "FILE MGR", "icon": Icons.folder, "category": "TOOLS", "screen": const FileManagerApp()},
     {"name": "FILE MGR", "icon": Icons.folder, "category": "TOOLS", "screen": const FileManagerApp()},
   ];
 
