@@ -1,5 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/app_model.dart';
 import 'apps/terminal_app.dart';
 import 'apps/network_scanner.dart';
 import 'apps/wifi_scanner.dart';
@@ -74,6 +75,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
 
   @override
   Widget build(BuildContext context) {
+    final appModel = Provider.of<AppModel>(context);
     final filteredApps = _apps.where((app) => app['category'] == _categories[_selectedIndex]['name']).toList();
 
     return Scaffold(
@@ -88,7 +90,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
         ),
         child: Column(
           children: [
-            // شريط علوي
+            // Top Bar
             Container(
               height: 50,
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -99,8 +101,17 @@ class _ZionDesktopState extends State<ZionDesktop> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('ZION OS 2027', style: TextStyle(color: Color(0xFF00BCD4), fontWeight: FontWeight.bold)),
-                  Text(_currentTime, style: const TextStyle(color: Color(0xFF00BCD4))),
+                  const Text('ZION OS 2027', style: TextStyle(color: Color(0xFF00BCD4), fontWeight: FontWeight.bold, fontSize: 16)),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.brightness_6, color: Color(0xFF00BCD4), size: 20),
+                        onPressed: () => appModel.toggleTheme(),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(_currentTime, style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 14)),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -127,7 +138,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
                           children: [
                             Icon(_categories[index]['icon'], color: const Color(0xFF00BCD4), size: 18),
                             const SizedBox(width: 8),
-                            Text(_categories[index]['name'], style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 12)),
+                            Text(_categories[index]['name'], style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                           ],
                         ),
                       ),
@@ -175,7 +186,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
                             child: Icon(app['icon'], color: const Color(0xFF00BCD4), size: 28),
                           ),
                           const SizedBox(height: 8),
-                          Text(app['name'], style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                          Text(app['name'], style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
