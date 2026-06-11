@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 
+// استيراد شاشات التطبيقات
+import 'apps/terminal_app.dart';
+import 'apps/network_scanner.dart';
+import 'apps/wifi_scanner.dart';
+import 'apps/exploit_db.dart';
+import 'apps/crypto_tool.dart';
+import 'apps/stealth_mode.dart';
+import 'apps/password_cracker.dart';
+import 'apps/ddos_attack.dart';
+import 'apps/forensics.dart';
+import 'apps/database_hacking.dart';
+import 'apps/cloud_attacks.dart';
+
 class ZionDesktop extends StatefulWidget {
   const ZionDesktop({super.key});
 
@@ -10,7 +23,6 @@ class ZionDesktop extends StatefulWidget {
 class _ZionDesktopState extends State<ZionDesktop> {
   String _currentTime = "";
   int _selectedIndex = 0;
-  bool _isInitialized = false;
 
   final List<Map<String, dynamic>> _categories = [
     {"name": "ATTACK", "icon": Icons.flash_on},
@@ -20,32 +32,29 @@ class _ZionDesktopState extends State<ZionDesktop> {
   ];
 
   final List<Map<String, dynamic>> _apps = [
-    {"name": "TERMINAL", "icon": Icons.terminal, "category": "TOOLS"},
-    {"name": "CRYPTO", "icon": Icons.lock, "category": "TOOLS"},
-    {"name": "WIFI", "icon": Icons.wifi, "category": "ATTACK"},
-    {"name": "EXPLOIT", "icon": Icons.bug_report, "category": "ATTACK"},
-    {"name": "CRACKER", "icon": Icons.vpn_key, "category": "ATTACK"},
-    {"name": "DDOS", "icon": Icons.speed, "category": "ATTACK"},
-    {"name": "DATABASE", "icon": Icons.storage, "category": "ATTACK"},
-    {"name": "CLOUD", "icon": Icons.cloud, "category": "ATTACK"},
-    {"name": "NETWORK", "icon": Icons.network_wifi, "category": "ANALYSIS"},
-    {"name": "FORENSICS", "icon": Icons.search, "category": "ANALYSIS"},
-    {"name": "STEALTH", "icon": Icons.visibility_off, "category": "DEFENSE"},
+    // Tools
+    {"name": "TERMINAL", "icon": Icons.terminal, "category": "TOOLS", "screen": const TerminalApp()},
+    {"name": "CRYPTO", "icon": Icons.lock, "category": "TOOLS", "screen": const CryptoToolApp()},
+    
+    // Attack
+    {"name": "WIFI", "icon": Icons.wifi, "category": "ATTACK", "screen": const WiFiScannerApp()},
+    {"name": "EXPLOIT", "icon": Icons.bug_report, "category": "ATTACK", "screen": const ExploitDBApp()},
+    {"name": "CRACKER", "icon": Icons.vpn_key, "category": "ATTACK", "screen": const PasswordCrackerApp()},
+    {"name": "DDOS", "icon": Icons.speed, "category": "ATTACK", "screen": const DDoSAttackApp()},
+    {"name": "DATABASE", "icon": Icons.storage, "category": "ATTACK", "screen": const DatabaseHackingApp()},
+    {"name": "CLOUD", "icon": Icons.cloud, "category": "ATTACK", "screen": const CloudAttacksApp()},
+    
+    // Analysis
+    {"name": "NETWORK", "icon": Icons.network_wifi, "category": "ANALYSIS", "screen": const NetworkScannerApp()},
+    {"name": "FORENSICS", "icon": Icons.search, "category": "ANALYSIS", "screen": const ForensicsApp()},
+    
+    // Defense
+    {"name": "STEALTH", "icon": Icons.visibility_off, "category": "DEFENSE", "screen": const StealthModeApp()},
   ];
 
   @override
   void initState() {
     super.initState();
-    _initialize();
-  }
-
-  void _initialize() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (mounted) {
-      setState(() {
-        _isInitialized = true;
-      });
-    }
     _updateTime();
   }
 
@@ -54,7 +63,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
       if (mounted) {
         final now = DateTime.now();
         setState(() {
-          _currentTime = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+          _currentTime = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
         });
         _updateTime();
       }
@@ -62,22 +71,22 @@ class _ZionDesktopState extends State<ZionDesktop> {
   }
 
   void _openApp(Map<String, dynamic> app) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Opening ${app['name']}...'), backgroundColor: const Color(0xFF00BCD4)),
-    );
+    if (app['screen'] != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => app['screen']),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
-        ),
-      );
-    }
-
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+    final iconSize = isSmallScreen ? 40.0 : 48.0;
+    final iconContainerSize = isSmallScreen ? 55.0 : 65.0;
+    final fontSize = isSmallScreen ? 10.0 : 11.0;
+    
     final filteredApps = _apps.where((app) => app['category'] == _categories[_selectedIndex]['name']).toList();
 
     return Scaffold(
@@ -94,8 +103,8 @@ class _ZionDesktopState extends State<ZionDesktop> {
           children: [
             // Top Bar
             Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              height: 45,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.9),
                 border: Border(bottom: BorderSide(color: const Color(0xFF00BCD4).withOpacity(0.3))),
@@ -103,16 +112,24 @@ class _ZionDesktopState extends State<ZionDesktop> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('ZION OS 2027', style: TextStyle(color: Color(0xFF00BCD4), fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(_currentTime, style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 14)),
+                  const Text('ZION OS', style: TextStyle(color: Color(0xFF00BCD4), fontWeight: FontWeight.bold, fontSize: 14)),
+                  Row(
+                    children: [
+                      Icon(Icons.battery_full, color: const Color(0xFF00BCD4), size: 14),
+                      const SizedBox(width: 8),
+                      Icon(Icons.network_wifi, color: const Color(0xFF00BCD4), size: 14),
+                      const SizedBox(width: 12),
+                      Text(_currentTime, style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 12)),
+                    ],
+                  ),
                 ],
               ),
             ),
             
-            // Categories
+            // Categories - تصميم مصغر
             Container(
-              height: 50,
-              margin: const EdgeInsets.all(15),
+              height: 40,
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: List.generate(_categories.length, (index) {
                   final isSelected = _selectedIndex == index;
@@ -120,26 +137,24 @@ class _ZionDesktopState extends State<ZionDesktop> {
                     child: GestureDetector(
                       onTap: () => setState(() => _selectedIndex = index),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF00BCD4).withOpacity(0.2) : Colors.transparent,
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(color: const Color(0xFF00BCD4).withOpacity(isSelected ? 0.8 : 0.3)),
+                          color: isSelected ? const Color(0xFF00BCD4).withOpacity(0.15) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF00BCD4).withOpacity(isSelected ? 0.6 : 0.2),
+                            width: 0.5,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(_categories[index]['icon'], color: const Color(0xFF00BCD4), size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              _categories[index]['name'],
-                              style: TextStyle(
-                                color: const Color(0xFF00BCD4),
-                                fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              ),
+                        child: Center(
+                          child: Text(
+                            _categories[index]['name'],
+                            style: TextStyle(
+                              color: isSelected ? const Color(0xFF00BCD4) : Colors.white54,
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -148,15 +163,15 @@ class _ZionDesktopState extends State<ZionDesktop> {
               ),
             ),
             
-            // App Grid
+            // App Grid - أيقونات مصغرة
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.all(15),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 0.9,
-                  crossAxisSpacing: 15,
-                  mainAxisSpacing: 15,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isSmallScreen ? 3 : 4,
+                  childAspectRatio: 0.85,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                 ),
                 itemCount: filteredApps.length,
                 itemBuilder: (context, index) {
@@ -165,30 +180,35 @@ class _ZionDesktopState extends State<ZionDesktop> {
                     onTap: () => _openApp(app),
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Colors.white.withOpacity(0.08), Colors.white.withOpacity(0.02)],
-                        ),
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.3)),
+                        color: Colors.white.withOpacity(0.03),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.15)),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            width: 50,
-                            height: 50,
+                            width: iconContainerSize,
+                            height: iconContainerSize,
                             decoration: BoxDecoration(
                               color: const Color(0xFF00BCD4).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(app['icon'], color: const Color(0xFF00BCD4), size: 28),
+                            child: Icon(
+                              app['icon'],
+                              color: const Color(0xFF00BCD4),
+                              size: iconSize,
+                            ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Text(
                             app['name'],
-                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
@@ -198,33 +218,31 @@ class _ZionDesktopState extends State<ZionDesktop> {
               ),
             ),
             
-            // Dock
+            // Dock - تصغير الأيقونات وتفعيلها
             Container(
-              height: 70,
-              margin: const EdgeInsets.all(15),
+              height: 55,
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.2)),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.15)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildDockIcon(Icons.terminal, 'TERM'),
-                  const SizedBox(width: 15),
-                  _buildDockIcon(Icons.network_wifi, 'NET'),
-                  const SizedBox(width: 15),
-                  _buildDockIcon(Icons.wifi, 'WIFI'),
-                  const SizedBox(width: 15),
-                  _buildDockIcon(Icons.lock, 'LOCK'),
-                  const SizedBox(width: 15),
-                  _buildDockIcon(Icons.visibility_off, 'HIDE'),
-                  const SizedBox(width: 15),
-                  _buildDockIcon(Icons.vpn_key, 'KEY'),
-                  const SizedBox(width: 15),
-                  Container(width: 1, height: 30, color: const Color(0xFF00BCD4).withOpacity(0.3)),
-                  const SizedBox(width: 15),
-                  _buildDockIcon(Icons.apps, 'APPS'),
+                  _buildDockIcon(Icons.terminal, 'TERM', () => _openApp(_apps.firstWhere((a) => a['name'] == 'TERMINAL', orElse: () => {}))),
+                  const SizedBox(width: 12),
+                  _buildDockIcon(Icons.wifi, 'WIFI', () => _openApp(_apps.firstWhere((a) => a['name'] == 'WIFI', orElse: () => {}))),
+                  const SizedBox(width: 12),
+                  _buildDockIcon(Icons.lock, 'LOCK', () => _openApp(_apps.firstWhere((a) => a['name'] == 'CRYPTO', orElse: () => {}))),
+                  const SizedBox(width: 12),
+                  _buildDockIcon(Icons.visibility_off, 'HIDE', () => _openApp(_apps.firstWhere((a) => a['name'] == 'STEALTH', orElse: () => {}))),
+                  const SizedBox(width: 12),
+                  _buildDockIcon(Icons.vpn_key, 'KEY', () => _openApp(_apps.firstWhere((a) => a['name'] == 'CRACKER', orElse: () => {}))),
+                  const SizedBox(width: 12),
+                  Container(width: 1, height: 30, color: const Color(0xFF00BCD4).withOpacity(0.15)),
+                  const SizedBox(width: 12),
+                  _buildDockIcon(Icons.apps, 'APPS', () {}),
                 ],
               ),
             ),
@@ -234,23 +252,26 @@ class _ZionDesktopState extends State<ZionDesktop> {
     );
   }
 
-  Widget _buildDockIcon(IconData icon, String label) {
+  Widget _buildDockIcon(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 45,
-            height: 45,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF006064)]),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Icon(icon, color: Colors.white, size: 20),
           ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 9)),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white38, fontSize: 8),
+          ),
         ],
       ),
     );
