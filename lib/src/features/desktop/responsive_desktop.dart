@@ -1,88 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/theme/theme_manager.dart';
-import '../../widgets/glassmorphism.dart';
+import '../../core/utils/responsive_helper.dart';
+import '../settings/main_settings.dart';
+import '../wifi/zion_wifi_panel.dart';
+import '../si/si_control_panel.dart';
+import '../windows/zion_file_manager.dart';
+import '../windows/zion_browser.dart';
+import '../windows/zion_text_editor.dart';
+import '../network/network_analyzer.dart';
+import '../system/process_manager.dart';
+import '../system/system_monitor.dart';
+import '../security/vulnerability_scanner.dart';
+import '../reports/report_generator.dart';
+import '../packages/package_manager.dart';
+import '../logs/log_viewer.dart';
+import '../scheduler/task_scheduler.dart';
+import '../storage/disk_usage_analyzer.dart';
+import '../backup/backup_manager.dart';
+import '../exploits/exploit_database.dart';
+import '../payloads/payload_generator.dart';
+import '../qr/qr_scanner.dart';
+import '../../../cosmic_terminal.dart';
 
-class SurfaceDesktop extends StatefulWidget {
-  const SurfaceDesktop({super.key});
+class ResponsiveDesktop extends StatefulWidget {
+  const ResponsiveDesktop({super.key});
 
   @override
-  State<SurfaceDesktop> createState() => _SurfaceDesktopState();
+  State<ResponsiveDesktop> createState() => _ResponsiveDesktopState();
 }
 
-class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStateMixin {
-  final ThemeManager _themeManager = ThemeManager();
+class _ResponsiveDesktopState extends State<ResponsiveDesktop> {
   final List<DesktopWindow> _windows = [];
-  final List<DesktopIcon> _desktopIcons = [];
   int _nextWindowId = 1;
   DateTime _currentTime = DateTime.now();
-  bool _showStartMenu = false;
-  late AnimationController _startMenuController;
-  late Animation<double> _startMenuAnimation;
-  int _activeWorkspace = 0;
-  final int _workspaceCount = 4;
+  bool _menuOpen = false;
+  int? _draggingWindowId;
+  Offset? _dragStart;
+  late Timer _clockTimer;
 
   @override
   void initState() {
     super.initState();
-    _loadDesktopIcons();
-    _startMenuController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _startMenuAnimation = CurvedAnimation(parent: _startMenuController, curve: Curves.easeOutBack);
-    _updateTime();
-    _loadWindowPositions();
-  }
-
-  void _updateTime() {
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _currentTime = DateTime.now());
-        _updateTime();
-      }
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) setState(() => _currentTime = DateTime.now());
     });
   }
 
-  void _loadDesktopIcons() {
-    _desktopIcons.addAll([
-      DesktopIcon('Terminal', Icons.terminal, Colors.green, () => _openWindow('Terminal', const Placeholder())),
-      DesktopIcon('Files', Icons.folder, Colors.blue, () => _openWindow('Files', const Placeholder())),
-      DesktopIcon('Browser', Icons.public, Colors.orange, () => _openWindow('Browser', const Placeholder())),
-      DesktopIcon('Settings', Icons.settings, Colors.grey, () => _openWindow('Settings', const Placeholder())),
-    ]);
-  }
-
-  Future<void> _loadWindowPositions() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('window_positions');
-    if (saved != null) {
-      // استعادة مواقع النوافذ المحفوظة
-    }
-  }
-
-  void _openWindow(String title, Widget content, {Size size = const Size(800, 600)}) {
+  void _openWindow(String title, Widget content, {Size? size}) {
+    final screenSize = MediaQuery.of(context).size;
+    final defaultSize = Size(
+      ResponsiveHelper.getWindowWidth(context, 850),
+      ResponsiveHelper.getWindowHeight(context, 650),
+    );
+    
     setState(() {
       _windows.add(DesktopWindow(
         id: _nextWindowId++,
         title: title,
         content: content,
-        position: Offset(50 + (_windows.length % 5) * 30, 50 + (_windows.length % 5) * 30),
-        size: size,
+        position: Offset(
+          50 + (_windows.length % 5) * 30,
+          50 + (_windows.length % 5) * 30,
+        ),
+        size: size ?? defaultSize,
         isMinimized: false,
         isMaximized: false,
       ));
     });
-    _saveWindowPositions();
-  }
-
-  void _saveWindowPositions() async {
-    final prefs = await SharedPreferences.getInstance();
-    // حفظ مواقع النوافذ
   }
 
   void _closeWindow(int id) {
-    setState(() {
-      _windows.removeWhere((w) => w.id == id);
-    });
-    _saveWindowPositions();
+    setState(() => _windows.removeWhere((w) => w.id == id));
   }
 
   void _minimizeWindow(int id) {
@@ -107,7 +95,10 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
         if (_windows[index].isMaximized) {
           _windows[index].savedSize = _windows[index].size;
           _windows[index].savedPosition = _windows[index].position;
-          _windows[index].size = const Size(double.infinity, double.infinity);
+          _windows[index].size = Size(
+            MediaQuery.of(context).size.width - 40,
+            MediaQuery.of(context).size.height - 100,
+          );
           _windows[index].position = Offset.zero;
         } else {
           _windows[index].size = _windows[index].savedSize;
@@ -128,90 +119,110 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
   }
 
   void _startDragging(int id, Offset startPosition) {
-    // بدء السحب
+    _draggingWindowId = id;
+    _dragStart = startPosition;
   }
 
   void _updateDragging(Offset newPosition) {
-    // تحديث موضع النافذة أثناء السحب
+    if (_draggingWindowId != null && _dragStart != null) {
+      final index = _windows.indexWhere((w) => w.id == _draggingWindowId);
+      if (index != -1 && !_windows[index].isMaximized) {
+        setState(() {
+          _windows[index].position += newPosition - _dragStart!;
+          _dragStart = newPosition;
+        });
+      }
+    }
   }
 
   void _stopDragging() {
-    // إيقاف السحب
+    _draggingWindowId = null;
+    _dragStart = null;
   }
 
-  void _toggleStartMenu() {
-    setState(() {
-      _showStartMenu = !_showStartMenu;
-      if (_showStartMenu) {
-        _startMenuController.forward();
-      } else {
-        _startMenuController.reverse();
-      }
-    });
-  }
+  void _toggleMenu() => setState(() => _menuOpen = !_menuOpen);
 
-  void _switchWorkspace(int index) {
-    setState(() => _activeWorkspace = index);
+  @override
+  void dispose() {
+    _clockTimer.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = _themeManager.currentTheme;
-    
     return Scaffold(
-      backgroundColor: theme.background,
-      body: Stack(
-        children: [
-          // خلفية Matrix Rain
-          _buildMatrixBackground(),
-          
-          // أيقونات سطح المكتب
-          _buildDesktopIcons(),
-          
-          // النوافذ المفتوحة
-          ..._windows.where((w) => !w.isMinimized).map((w) => _buildWindow(w)),
-          
-          // قائمة ابدأ
-          if (_showStartMenu) _buildStartMenu(),
-          
-          // شريط المهام
-          _buildTaskbar(),
-        ],
+      backgroundColor: Colors.black,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              _buildBackground(),
+              _buildDesktopIcons(),
+              ..._windows.where((w) => !w.isMinimized).map((w) => _buildWindow(w)),
+              if (_menuOpen) _buildStartMenu(),
+              _buildTaskbar(),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildMatrixBackground() {
+  Widget _buildBackground() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.center,
-          radius: 1.5,
-          colors: [_themeManager.currentTheme.accent.withOpacity(0.15), _themeManager.currentTheme.background],
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF00FF41), Colors.black],
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Text(
           'ZION OS\nv3.3',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: ResponsiveHelper.getFontSize(context, 48),
+            fontWeight: FontWeight.bold,
+            shadows: const [Shadow(color: Color(0xFF00FF41), blurRadius: 10)],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildDesktopIcons() {
+    final icons = [
+      {'icon': Icons.terminal, 'label': 'Terminal', 'widget': const CosmicTerminal(), 'color': Colors.green},
+      {'icon': Icons.wifi, 'label': 'WiFi', 'widget': const ZionWifiPanel(), 'color': Colors.blue},
+      {'icon': Icons.psychology, 'label': 'SI Agent', 'widget': const SIControlPanel(), 'color': Colors.purple},
+      {'icon': Icons.folder, 'label': 'Files', 'widget': const ZionFileManager(), 'color': Colors.orange},
+      {'icon': Icons.public, 'label': 'Browser', 'widget': const ZionBrowser(), 'color': Colors.teal},
+      {'icon': Icons.edit, 'label': 'Editor', 'widget': const ZionTextEditor(), 'color': Colors.pink},
+      {'icon': Icons.settings, 'label': 'Settings', 'widget': const MainSettings(), 'color': Colors.grey},
+    ];
+
+    final iconSize = ResponsiveHelper.getIconSize(context);
+    final gridColumns = ResponsiveHelper.getDesktopGridColumns(context);
+
     return Positioned.fill(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: ResponsiveHelper.getDesktopPadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 40),
+            SizedBox(height: ResponsiveHelper.getFontSize(context, 40)),
             Wrap(
-              spacing: 30,
-              runSpacing: 30,
-              children: _desktopIcons.map((icon) => _DesktopIconWidget(icon: icon)).toList(),
+              spacing: ResponsiveHelper.getFontSize(context, 30),
+              runSpacing: ResponsiveHelper.getFontSize(context, 30),
+              children: icons.map((icon) => _DesktopIcon(
+                icon: icon['icon'] as IconData,
+                label: icon['label'] as String,
+                color: icon['color'] as Color,
+                iconSize: iconSize,
+                onTap: () => _openWindow(icon['label'] as String, icon['widget'] as Widget),
+              )).toList(),
             ),
           ],
         ),
@@ -221,21 +232,33 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
 
   Widget _buildWindow(DesktopWindow w) {
     return Positioned(
-      left: w.position.dx,
-      top: w.position.dy,
+      left: w.position.dx.clamp(0, MediaQuery.of(context).size.width - 100),
+      top: w.position.dy.clamp(0, MediaQuery.of(context).size.height - 100),
       child: GestureDetector(
         onTap: () => _bringToFront(w.id),
-        child: GlassmorphicContainer(
-          borderRadius: 12,
-          child: Container(
-            width: w.isMaximized ? MediaQuery.of(context).size.width - 40 : w.size.width,
-            height: w.isMaximized ? MediaQuery.of(context).size.height - 100 : w.size.height,
-            child: Column(
-              children: [
-                _buildTitleBar(w),
-                Expanded(child: w.content),
-              ],
-            ),
+        onPanStart: (details) => _startDragging(w.id, details.localPosition),
+        onPanUpdate: (details) => _updateDragging(details.localPosition),
+        onPanEnd: (_) => _stopDragging(),
+        child: Container(
+          width: w.isMaximized ? MediaQuery.of(context).size.width - 40 : w.size.width,
+          height: w.isMaximized ? MediaQuery.of(context).size.height - 100 : w.size.height,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.95),
+            borderRadius: BorderRadius.circular(w.isMaximized ? 0 : 12),
+            border: Border.all(color: const Color(0xFF00FF41), width: 1),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10)],
+          ),
+          child: Column(
+            children: [
+              _buildTitleBar(w),
+              Expanded(child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(w.isMaximized ? 0 : 12),
+                  bottomRight: Radius.circular(w.isMaximized ? 0 : 12),
+                ),
+                child: w.content,
+              )),
+            ],
           ),
         ),
       ),
@@ -247,9 +270,12 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: _themeManager.currentTheme.accent.withOpacity(0.1),
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-        border: Border(bottom: BorderSide(color: _themeManager.currentTheme.accent.withOpacity(0.3))),
+        color: const Color(0xFF00FF41).withOpacity(0.1),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(w.isMaximized ? 0 : 12),
+          topRight: Radius.circular(w.isMaximized ? 0 : 12),
+        ),
+        border: Border(bottom: BorderSide(color: const Color(0xFF00FF41).withOpacity(0.3))),
       ),
       child: Row(
         children: [
@@ -266,7 +292,7 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
           Expanded(
             child: Text(
               w.title,
-              style: TextStyle(color: _themeManager.currentTheme.accent, fontSize: 12),
+              style: const TextStyle(color: Color(0xFF00FF41), fontSize: 12),
               textAlign: TextAlign.center,
             ),
           ),
@@ -289,41 +315,69 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
   }
 
   Widget _buildStartMenu() {
+    final List<Map<String, dynamic>> menuItems = [
+      {'icon': Icons.terminal, 'title': 'Terminal', 'widget': const CosmicTerminal(), 'color': Colors.green},
+      {'icon': Icons.wifi, 'title': 'WiFi', 'widget': const ZionWifiPanel(), 'color': Colors.blue},
+      {'icon': Icons.psychology, 'title': 'SI Agent', 'widget': const SIControlPanel(), 'color': Colors.purple},
+      {'icon': Icons.folder, 'title': 'File Manager', 'widget': const ZionFileManager(), 'color': Colors.orange},
+      {'icon': Icons.public, 'title': 'Browser', 'widget': const ZionBrowser(), 'color': Colors.teal},
+      {'icon': Icons.edit, 'title': 'Editor', 'widget': const ZionTextEditor(), 'color': Colors.pink},
+      {'icon': Icons.settings, 'title': 'Settings', 'widget': const MainSettings(), 'color': Colors.grey},
+      const {'icon': Icons.exit_to_app, 'title': 'Exit', 'color': Colors.red},
+    ];
+
     return Positioned(
-      bottom: 60,
-      left: 10,
-      child: ScaleTransition(
-        scale: _startMenuAnimation,
-        child: GlassmorphicContainer(
-          borderRadius: 12,
-          child: Container(
-            width: 280,
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildStartMenuItem(Icons.terminal, 'Terminal', () {}),
-                _buildStartMenuItem(Icons.folder, 'File Manager', () {}),
-                _buildStartMenuItem(Icons.public, 'Browser', () {}),
-                _buildStartMenuItem(Icons.settings, 'Settings', () {}),
-                const Divider(color: Colors.white24),
-                _buildStartMenuItem(Icons.power_settings_new, 'Shutdown', () => Navigator.pop(context), isDanger: true),
-              ],
-            ),
+      bottom: 70,
+      left: 16,
+      child: Material(
+        elevation: 8,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: ResponsiveHelper.isMobile(context) ? 250 : 280,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.95),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF00FF41)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF00FF41),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+                ),
+                child: const Row(
+                  children: [
+                    CircleAvatar(radius: 24, backgroundColor: Colors.white, child: Icon(Icons.person, color: Colors.black)),
+                    SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Zion User', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        Text('zion@os', style: TextStyle(color: Colors.white70)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              ...menuItems.map((item) => ListTile(
+                leading: Icon(item['icon'] as IconData, color: item['color'] as Color? ?? const Color(0xFF00FF41)),
+                title: Text(item['title'] as String, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                onTap: () {
+                  _toggleMenu();
+                  if (item['title'] == 'Exit') {
+                    Navigator.pop(context);
+                  } else {
+                    _openWindow(item['title'] as String, item['widget'] as Widget);
+                  }
+                },
+              )),
+            ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStartMenuItem(IconData icon, String title, VoidCallback onTap, {bool isDanger = false}) {
-    return ListTile(
-      leading: Icon(icon, color: isDanger ? Colors.red : _themeManager.currentTheme.accent),
-      title: Text(title, style: TextStyle(color: isDanger ? Colors.red : Colors.white)),
-      onTap: () {
-        _toggleStartMenu();
-        onTap();
-      },
     );
   }
 
@@ -331,51 +385,23 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
     return Positioned(
       bottom: 0, left: 0, right: 0,
       child: Container(
-        height: 50,
+        height: ResponsiveHelper.isMobile(context) ? 40 : 50,
         decoration: BoxDecoration(
-          color: _themeManager.currentTheme.background.withOpacity(0.9),
-          border: Border(top: BorderSide(color: _themeManager.currentTheme.accent.withOpacity(0.3))),
+          color: Colors.black.withOpacity(0.9),
+          border: Border(top: BorderSide(color: const Color(0xFF00FF41).withOpacity(0.3))),
         ),
         child: Row(
           children: [
-            // زر ابدأ
             GestureDetector(
-              onTap: _toggleStartMenu,
+              onTap: _toggleMenu,
               child: Container(
-                width: 60, height: 50,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [_themeManager.currentTheme.accent, _themeManager.currentTheme.background]),
-                ),
-                child: Icon(Icons.menu, color: Colors.white, size: 24),
+                width: ResponsiveHelper.isMobile(context) ? 50 : 60,
+                height: ResponsiveHelper.isMobile(context) ? 40 : 50,
+                decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF00FF41), Colors.black])),
+                child: Icon(Icons.menu, color: Colors.white, size: ResponsiveHelper.isMobile(context) ? 20 : 24),
               ),
             ),
-            
-            // مساحات العمل
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(_workspaceCount, (i) => GestureDetector(
-                    onTap: () => _switchWorkspace(i),
-                    child: Container(
-                      width: 40,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: _activeWorkspace == i ? _themeManager.currentTheme.accent : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text('${i + 1}', style: TextStyle(color: _activeWorkspace == i ? Colors.black : Colors.white)),
-                      ),
-                    ),
-                  )),
-                ),
-              ),
-            ),
-            
-            // النوافذ المفتوحة
-            Expanded(
-              flex: 2,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -383,14 +409,14 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
                     onTap: () => w.isMinimized ? _restoreWindow(w.id) : _bringToFront(w.id),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      height: 50,
+                      height: ResponsiveHelper.isMobile(context) ? 40 : 50,
                       decoration: BoxDecoration(
                         border: Border(left: BorderSide(color: Colors.white.withOpacity(0.1))),
                       ),
                       child: Center(
                         child: Text(
                           w.title,
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          style: TextStyle(color: Colors.white, fontSize: ResponsiveHelper.isMobile(context) ? 10 : 12),
                         ),
                       ),
                     ),
@@ -398,8 +424,6 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
                 ),
               ),
             ),
-            
-            // أيقونات النظام والساعة
             _buildSystemTray(),
             _buildClock(),
           ],
@@ -409,28 +433,30 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
   }
 
   Widget _buildSystemTray() {
+    final iconSize = ResponsiveHelper.isMobile(context) ? 14 : 18;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
-        children: const [
-          Icon(Icons.battery_full, color: Colors.white, size: 18),
-          SizedBox(width: 8),
-          Icon(Icons.wifi, color: Colors.white, size: 18),
-          SizedBox(width: 8),
-          Icon(Icons.volume_up, color: Colors.white, size: 18),
+        children: [
+          Icon(Icons.battery_full, color: Colors.white, size: iconSize),
+          SizedBox(width: ResponsiveHelper.isMobile(context) ? 4 : 8),
+          Icon(Icons.wifi, color: Colors.white, size: iconSize),
+          SizedBox(width: ResponsiveHelper.isMobile(context) ? 4 : 8),
+          Icon(Icons.volume_up, color: Colors.white, size: iconSize),
         ],
       ),
     );
   }
 
   Widget _buildClock() {
+    final fontSize = ResponsiveHelper.isMobile(context) ? 10 : 12;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(_formatTime(_currentTime), style: const TextStyle(color: Colors.white, fontSize: 12)),
-          Text(_formatDate(_currentTime), style: const TextStyle(color: Colors.white70, fontSize: 9)),
+          Text(_formatTime(_currentTime), style: TextStyle(color: Colors.white, fontSize: fontSize)),
+          Text(_formatDate(_currentTime), style: TextStyle(color: Colors.white70, fontSize: fontSize - 2)),
         ],
       ),
     );
@@ -440,37 +466,42 @@ class _SurfaceDesktopState extends State<SurfaceDesktop> with TickerProviderStat
   String _formatDate(DateTime time) => '${time.day}/${time.month}/${time.year}';
 }
 
-class DesktopIcon {
-  final String label;
+class _DesktopIcon extends StatelessWidget {
   final IconData icon;
+  final String label;
   final Color color;
+  final double iconSize;
   final VoidCallback onTap;
 
-  DesktopIcon(this.label, this.icon, this.color, this.onTap);
-}
-
-class _DesktopIconWidget extends StatelessWidget {
-  final DesktopIcon icon;
-
-  const _DesktopIconWidget({required this.icon});
+  const _DesktopIcon({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.iconSize,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: icon.onTap,
+      onTap: onTap,
       child: Column(
         children: [
           Container(
-            width: 60, height: 60,
+            width: iconSize,
+            height: iconSize,
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.7),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: icon.color, width: 1),
+              border: Border.all(color: color, width: 1),
             ),
-            child: Icon(icon.icon, color: icon.color, size: 32),
+            child: Icon(icon, color: color, size: iconSize * 0.5),
           ),
           const SizedBox(height: 8),
-          Text(icon.label, style: TextStyle(color: Colors.white70, fontSize: 11)),
+          Text(
+            label,
+            style: TextStyle(color: Colors.white70, fontSize: iconSize * 0.15),
+          ),
         ],
       ),
     );

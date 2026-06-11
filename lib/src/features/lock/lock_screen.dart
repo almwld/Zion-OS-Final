@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
 
 class LockScreen extends StatefulWidget {
   const LockScreen({super.key});
@@ -9,26 +8,8 @@ class LockScreen extends StatefulWidget {
 }
 
 class _LockScreenState extends State<LockScreen> {
-  final LocalAuthentication _localAuth = LocalAuthentication();
   final TextEditingController _pinController = TextEditingController();
   String _errorMessage = '';
-
-  Future<void> _authenticateWithBiometrics() async {
-    try {
-      final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Verify your identity to unlock Zion OS',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true,
-        ),
-      );
-      if (authenticated) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } catch (e) {
-      setState(() => _errorMessage = 'Biometric not available');
-    }
-  }
 
   void _unlockWithPin() {
     if (_pinController.text == '1234') {
@@ -82,9 +63,14 @@ class _LockScreenState extends State<LockScreen> {
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           hintText: '****',
-                          border: OutlineInputBorder(
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(color: Color(0xFF00FF41)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF00FF41), width: 2),
                           ),
                         ),
                         onSubmitted: (_) => _unlockWithPin(),
@@ -95,14 +81,13 @@ class _LockScreenState extends State<LockScreen> {
                           child: Text(_errorMessage, style: const TextStyle(color: Colors.red)),
                         ),
                       const SizedBox(height: 20),
-                      ElevatedButton.icon(
-                        onPressed: _authenticateWithBiometrics,
-                        icon: const Icon(Icons.fingerprint),
-                        label: const Text('Use Fingerprint'),
+                      ElevatedButton(
+                        onPressed: _unlockWithPin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF00FF41),
                           foregroundColor: Colors.black,
                         ),
+                        child: const Text('UNLOCK'),
                       ),
                     ],
                   ),

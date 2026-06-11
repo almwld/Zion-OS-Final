@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'src/core/theme/theme_manager.dart';
 import 'src/features/splash/splash_screen.dart';
 import 'src/features/onboarding/onboarding_screen.dart';
 import 'src/features/lock/lock_screen.dart';
@@ -16,9 +15,6 @@ void main() async {
     DeviceOrientation.landscapeRight,
   ]);
   
-  final themeManager = ThemeManager();
-  await themeManager.loadSettings();
-  
   final prefs = await SharedPreferences.getInstance();
   final isFirstLaunch = prefs.getBool('first_launch') ?? true;
   
@@ -26,29 +22,27 @@ void main() async {
     await prefs.setBool('first_launch', false);
   }
   
-  runApp(ZionOS(isFirstLaunch: isFirstLaunch, themeManager: themeManager));
+  runApp(ZionOS(isFirstLaunch: isFirstLaunch));
 }
 
 class ZionOS extends StatelessWidget {
   final bool isFirstLaunch;
-  final ThemeManager themeManager;
-  const ZionOS({super.key, required this.isFirstLaunch, required this.themeManager});
+  const ZionOS({super.key, required this.isFirstLaunch});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Zion OS v3.3',
       debugShowCheckedModeBanner: false,
-      theme: themeManager.getTheme(),
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: Colors.black,
+        primaryColor: Colors.green,
+      ),
       initialRoute: isFirstLaunch ? '/onboarding' : '/lock',
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/lock': (context) => const LockScreen(),
         '/home': (context) => const ResponsiveDesktop(),
-        '/file_manager': (context) => const AdvancedFileManager(),
-        '/browser': (context) => const AdvancedBrowser(),
-        '/editor': (context) => const AdvancedEditor(),
-        '/notifications': (context) => const NotificationCenter(),
       },
     );
   }
