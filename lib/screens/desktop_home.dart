@@ -10,6 +10,7 @@ class ZionDesktop extends StatefulWidget {
 class _ZionDesktopState extends State<ZionDesktop> {
   String _currentTime = "";
   int _selectedIndex = 0;
+  bool _isInitialized = false;
 
   final List<Map<String, dynamic>> _categories = [
     {"name": "ATTACK", "icon": Icons.flash_on},
@@ -35,6 +36,16 @@ class _ZionDesktopState extends State<ZionDesktop> {
   @override
   void initState() {
     super.initState();
+    _initialize();
+  }
+
+  void _initialize() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
     _updateTime();
   }
 
@@ -58,6 +69,15 @@ class _ZionDesktopState extends State<ZionDesktop> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF00BCD4)),
+        ),
+      );
+    }
+
     final filteredApps = _apps.where((app) => app['category'] == _categories[_selectedIndex]['name']).toList();
 
     return Scaffold(

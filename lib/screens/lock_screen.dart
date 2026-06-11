@@ -37,14 +37,21 @@ class _LockScreenState extends State<LockScreen> {
     if (_pinController.text == _correctPin) {
       setState(() => _isLoading = true);
       
-      // تأخير بسيط للتأكد من الانتقال السلس
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ZionDesktop()),
-        );
+      try {
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        if (mounted) {
+          await Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ZionDesktop()),
+          );
+        }
+      } catch (e) {
+        print("Navigation error: $e");
+        setState(() {
+          _isLoading = false;
+          _errorMessage = "Navigation error, please try again";
+        });
       }
     } else {
       setState(() {
@@ -76,14 +83,13 @@ class _LockScreenState extends State<LockScreen> {
                     children: [
                       CircularProgressIndicator(color: Color(0xFF00BCD4)),
                       SizedBox(height: 16),
-                      Text('Loading...', style: TextStyle(color: Color(0xFF00BCD4))),
+                      Text('Loading Zion OS...', style: TextStyle(color: Color(0xFF00BCD4))),
                     ],
                   ),
                 )
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo
                     Container(
                       width: 100,
                       height: 100,
@@ -104,7 +110,6 @@ class _LockScreenState extends State<LockScreen> {
                     Text(_currentTime, style: const TextStyle(fontSize: 48, color: Color(0xFF00BCD4), fontWeight: FontWeight.bold)),
                     const SizedBox(height: 50),
                     
-                    // PIN Input
                     Container(
                       width: 280,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
@@ -136,7 +141,6 @@ class _LockScreenState extends State<LockScreen> {
                       ),
                     const SizedBox(height: 40),
                     
-                    // Number Pad
                     SizedBox(
                       width: 300,
                       child: GridView.count(
