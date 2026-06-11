@@ -47,6 +47,7 @@ class ZionOS extends StatelessWidget {
         '/home': (context) => const ResponsiveDesktop(),
         '/file_manager': (context) => const AdvancedFileManager(),
         '/browser': (context) => const AdvancedBrowser(),
+        '/editor': (context) => const AdvancedEditor(),
       },
     );
   }
