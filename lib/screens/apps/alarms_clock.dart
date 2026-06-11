@@ -400,7 +400,7 @@ class _AlarmsClockAppState extends State<AlarmsClockApp> with SingleTickerProvid
           Expanded(
             child: TabBarView(
               children: [
-                _buildTimerTab(hours, minutes, seconds),
+                _buildTimerTab(hours, minutes, _timerSeconds % 60),
                 _buildStopwatchTab(),
               ],
             ),
@@ -523,3 +523,5 @@ String jsonEncode(List<Map<String, dynamic>> data) {
 List<Map<String, dynamic>> jsonDecode(String data) {
   return [];
 }
+// تأكد من وجود المتغير seconds داخل دالة _buildTimerTab
+// أو قم بتعديل استدعاء _buildTimerTab

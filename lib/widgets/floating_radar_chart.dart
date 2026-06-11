@@ -5,7 +5,6 @@ import 'dart:io';
 
 class FloatingRadarChart extends StatefulWidget {
   final VoidCallback onClose;
-  
   const FloatingRadarChart({super.key, required this.onClose});
 
   @override
@@ -13,25 +12,14 @@ class FloatingRadarChart extends StatefulWidget {
 }
 
 class _FloatingRadarChartState extends State<FloatingRadarChart> {
-  // Position and size
   Offset _position = Offset.zero;
   double _width = 280;
   double _height = 280;
   
-  // Data values (12 metrics)
   Map<String, double> _metrics = {
-    'CPU': 0.0,
-    'RAM': 0.0,
-    'Storage': 0.0,
-    'Battery': 0.0,
-    'Network': 0.0,
-    'Temp': 0.0,
-    'Processes': 0.0,
-    'Uptime': 0.0,
-    'Disk I/O': 0.0,
-    'GPU': 0.0,
-    'Security': 0.0,
-    'Performance': 0.0,
+    'CPU': 0.0, 'RAM': 0.0, 'Storage': 0.0, 'Battery': 0.0,
+    'Network': 0.0, 'Temp': 0.0, 'Processes': 0.0, 'Uptime': 0.0,
+    'Disk I/O': 0.0, 'GPU': 0.0, 'Security': 0.0, 'Performance': 0.0,
   };
   
   final List<String> _titles = [
@@ -78,7 +66,7 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
       _metrics['Battery'] = _getBatteryLevel();
       _metrics['Network'] = _getNetworkLoad();
       _metrics['Temp'] = _getTemperature();
-      _metrics['Processes'] = _getProcessCount() / 100; // normalize
+      _metrics['Processes'] = _getProcessCount() / 100;
       _metrics['Uptime'] = _getUptimeRatio();
       _metrics['Disk I/O'] = _getDiskIO();
       _metrics['GPU'] = _getGPULoad();
@@ -91,7 +79,6 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
     });
   }
 
-  // === حصول على بيانات حقيقية أو محاكاة ===
   double _getCPUUsage() {
     try {
       final result = Process.runSync('top', ['-bn1'], runInShell: true);
@@ -138,10 +125,7 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
     return 0.75;
   }
 
-  double _getNetworkLoad() {
-    return 0.2 + (DateTime.now().second % 80) / 100;
-  }
-
+  double _getNetworkLoad() => 0.2 + (DateTime.now().second % 80) / 100;
   double _getTemperature() {
     try {
       final result = Process.runSync('cat', ['/sys/class/thermal/thermal_zone0/temp'], runInShell: true);
@@ -156,9 +140,7 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
       final result = Process.runSync('ps', ['-e'], runInShell: true);
       final lines = result.stdout.toString().split('\n');
       return (lines.length - 1).toDouble();
-    } catch (_) {
-      return 50;
-    }
+    } catch (_) { return 50; }
   }
 
   double _getUptimeRatio() {
@@ -166,26 +148,13 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
       final result = Process.runSync('cat', ['/proc/uptime'], runInShell: true);
       final uptime = double.parse(result.stdout.toString().split(' ')[0]);
       return (uptime / 604800).clamp(0.0, 1.0);
-    } catch (_) {
-      return 0.1;
-    }
+    } catch (_) { return 0.1; }
   }
 
-  double _getDiskIO() {
-    return 0.15 + (DateTime.now().millisecond % 30) / 100;
-  }
-
-  double _getGPULoad() {
-    return 0.2 + (DateTime.now().second % 50) / 100;
-  }
-
-  double _getSecurityScore() {
-    return 0.85;
-  }
-
-  double _getPerformanceScore() {
-    return 0.7;
-  }
+  double _getDiskIO() => 0.15 + (DateTime.now().millisecond % 30) / 100;
+  double _getGPULoad() => 0.2 + (DateTime.now().second % 50) / 100;
+  double _getSecurityScore() => 0.85;
+  double _getPerformanceScore() => 0.7;
 
   List<RadarEntry> _getRadarEntries() {
     return _titles.map((title) => RadarEntry(value: _metrics[title] ?? 0.0)).toList();
@@ -205,17 +174,10 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
             color: Colors.black.withOpacity(0.92),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.6), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF00BCD4).withOpacity(0.3),
-                blurRadius: 12,
-                spreadRadius: 2,
-              ),
-            ],
+            boxShadow: [BoxShadow(color: const Color(0xFF00BCD4).withOpacity(0.3), blurRadius: 12, spreadRadius: 2)],
           ),
           child: Column(
             children: [
-              // عنوان النافذة (للسحب)
               GestureDetector(
                 onPanUpdate: (details) {
                   setState(() {
@@ -230,10 +192,7 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
                   height: 32,
                   decoration: BoxDecoration(
                     color: const Color(0xFF00BCD4).withOpacity(0.2),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
+                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
                   ),
                   child: Row(
                     children: [
@@ -242,18 +201,11 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
                       const SizedBox(width: 8),
                       const Text('Radar Monitor', style: TextStyle(color: Color(0xFF00BCD4), fontSize: 12)),
                       const Spacer(),
-                      // زر تصغير (Collapse)
                       GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _width = 48;
-                            _height = 48;
-                          });
-                        },
+                        onTap: () => setState(() { _width = 48; _height = 48; }),
                         child: const Icon(Icons.minimize, color: Color(0xFF00BCD4), size: 18),
                       ),
                       const SizedBox(width: 8),
-                      // زر إغلاق
                       GestureDetector(
                         onTap: widget.onClose,
                         child: const Icon(Icons.close, color: Color(0xFF00BCD4), size: 18),
@@ -263,15 +215,12 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
                   ),
                 ),
               ),
-              // منطقة الرسم البياني (قابلة للتكبير/التصغير)
               Expanded(
                 child: GestureDetector(
                   onScaleUpdate: (details) {
                     setState(() {
-                      double newWidth = (_width * details.scale).clamp(120.0, 500.0);
-                      double newHeight = (_height * details.scale).clamp(120.0, 500.0);
-                      _width = newWidth;
-                      _height = newHeight;
+                      _width = (_width * details.scale).clamp(120.0, 500.0);
+                      _height = (_height * details.scale).clamp(120.0, 500.0);
                     });
                   },
                   child: RadarChart(
@@ -287,26 +236,17 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
                       ],
                       radarBorderData: const BorderSide(color: Color(0xFF00BCD4), width: 1),
                       titlePositionPercentageOffset: 1.1,
-                      getTitle: (index, angle) {
-                        return RadarChartTitle(
-                          text: _titles[index],
-                          angle: angle,
-                        );
-                      },
+                      getTitle: (index, angle) => RadarChartTitle(text: _titles[index], angle: angle),
                     ),
                   ),
                 ),
               ),
-              // شريط الحالة السفلي (إظهار القيم)
               Container(
                 height: 24,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.black.withOpacity(0.8),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16),
-                  ),
+                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
                 ),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -315,10 +255,7 @@ class _FloatingRadarChartState extends State<FloatingRadarChart> {
                       double val = _metrics[title] ?? 0;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: Text(
-                          '$title: ${(val * 100).toStringAsFixed(0)}%',
-                          style: TextStyle(color: _colors[_titles.indexOf(title)], fontSize: 9),
-                        ),
+                        child: Text('$title: ${(val * 100).toStringAsFixed(0)}%', style: TextStyle(color: _colors[_titles.indexOf(title)], fontSize: 9)),
                       );
                     }).toList(),
                   ),
