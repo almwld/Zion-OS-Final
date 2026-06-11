@@ -39,6 +39,7 @@ import 'apps/system_info.dart';
 import 'apps/network_tools.dart';
 import 'apps/performance_monitor.dart';
 import 'apps/battery_saver.dart';
+import 'apps/backup_manager.dart';
 
 class ZionDesktop extends StatefulWidget {
   const ZionDesktop({super.key});
@@ -106,6 +107,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
     {"name": "NET TOOLS", "icon": Icons.wifi, "category": "TOOLS", "screen": const NetworkToolsApp()},
     {"name": "PERF MON", "icon": Icons.speed, "category": "TOOLS", "screen": const PerformanceMonitorApp()},
     {"name": "BATTERY", "icon": Icons.battery_charging_full, "category": "TOOLS", "screen": const BatterySaverApp()},
+    {"name": "BACKUP", "icon": Icons.backup, "category": "TOOLS", "screen": const BackupManagerApp()},
   ];
 
   @override
