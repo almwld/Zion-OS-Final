@@ -102,7 +102,7 @@ class _TerminalAppState extends State<TerminalApp> {
             ),
             child: Row(
               children: [
-                const Text("$", style: TextStyle(color: Color(0xFF00FF41), fontSize: 16)),
+                const Text("\$", style: TextStyle(color: Color(0xFF00FF41), fontSize: 16)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
