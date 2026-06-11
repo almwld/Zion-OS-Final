@@ -206,7 +206,7 @@ class _PerformanceHubAppState extends State<PerformanceHubApp> {
             const SizedBox(height: 16),
             
             // RAM Section
-            _buildMetricCard('RAM Usage', '${_ramUsage.toStringAsFixed(1)}%', Icons.ram, _getUsageColor(_ramUsage), _ramHistory),
+            _buildMetricCard('RAM Usage', '${_ramUsage.toStringAsFixed(1)}%', Icons.memory, _getUsageColor(_ramUsage), _ramHistory),
             
             const SizedBox(height: 16),
             

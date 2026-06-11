@@ -400,7 +400,7 @@ class _AlarmsClockAppState extends State<AlarmsClockApp> with SingleTickerProvid
           Expanded(
             child: TabBarView(
               children: [
-                _buildTimerTab(hours, minutes, _timerSeconds % 60),
+                _buildTimerTab((_timerSeconds ~/ 3600), ((_timerSeconds % 3600) ~/ 60), (_timerSeconds % 60)),
                 _buildStopwatchTab(),
               ],
             ),

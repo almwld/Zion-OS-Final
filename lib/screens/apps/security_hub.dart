@@ -21,14 +21,14 @@ class _SecurityHubAppState extends State<SecurityHubApp> {
   
   final List<Map<String, dynamic>> _tools = [
     // Protection
-    {'name': 'Firewall', 'icon': Icons.firewall, 'category': 'Protection', 'enabled': true, 'description': 'Network traffic control'},
+    {'name': 'Firewall', 'icon': Icons.security, 'category': 'Protection', 'enabled': true, 'description': 'Network traffic control'},
     {'name': 'App Lock', 'icon': Icons.lock, 'category': 'Protection', 'enabled': true, 'description': 'Lock sensitive apps'},
-    {'name': 'Encryption', 'icon': Icons.encryption, 'category': 'Protection', 'enabled': true, 'description': 'Data encryption'},
+    {'name': 'Encryption', 'icon': Icons.lock, 'category': 'Protection', 'enabled': true, 'description': 'Data encryption'},
     
     // Privacy
     {'name': 'Stealth Mode', 'icon': Icons.visibility_off, 'category': 'Privacy', 'enabled': true, 'description': 'Hide activities'},
     {'name': 'VPN', 'icon': Icons.vpn_key, 'category': 'Privacy', 'enabled': false, 'description': 'Secure connection'},
-    {'name': 'Incognito', 'icon': Icons.incognito, 'category': 'Privacy', 'enabled': false, 'description': 'Private browsing'},
+    {'name': 'Incognito', 'icon': Icons.visibility_off, 'category': 'Privacy', 'enabled': false, 'description': 'Private browsing'},
     
     // Network
     {'name': 'WiFi Scanner', 'icon': Icons.wifi, 'category': 'Network', 'enabled': true, 'description': 'Scan networks'},

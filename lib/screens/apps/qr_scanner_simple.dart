@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 class QRScannerApp extends StatefulWidget {
   const QRScannerApp({super.key});
@@ -54,69 +53,6 @@ class _QRScannerAppState extends State<QRScannerApp> {
             child: const Text('Add', style: TextStyle(color: Color(0xFF00BCD4))),
           ),
         ],
-      ),
-    );
-  }
-
-  void _generateQR() {
-    final text = _qrTextController.text.trim();
-    if (text.isEmpty) return;
-    
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Generated QR Code', style: TextStyle(color: Color(0xFF00BCD4), fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: QrImageView(
-                  data: text,
-                  version: QrVersions.auto,
-                  size: 200,
-                  backgroundColor: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SelectableText(text, style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: text));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('QR content copied'), backgroundColor: Color(0xFF00BCD4)),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00BCD4), foregroundColor: Colors.black),
-                      child: const Text('Copy'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
-                      child: const Text('Close'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -215,28 +151,6 @@ class _QRScannerAppState extends State<QRScannerApp> {
                 backgroundColor: const Color(0xFF00BCD4),
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Divider(color: Color(0xFF00BCD4), height: 2),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _qrTextController,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Enter text to generate QR',
-                labelStyle: TextStyle(color: Color(0xFF00BCD4)),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _generateQR,
-              icon: const Icon(Icons.qr_code),
-              label: const Text('Generate QR Code'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BCD4),
-                foregroundColor: Colors.black,
               ),
             ),
             if (_scannedResult.isNotEmpty) ...[
