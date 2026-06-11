@@ -48,3 +48,5 @@ flutter_launcher_icons:
   min_sdk_android: 21
   responsive_framework: ^1.0.0
   window_size: ^0.1.0
+  responsive_framework: ^1.0.0
+  window_size: ^0.1.0
