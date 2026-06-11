@@ -56,8 +56,8 @@ class _DataUsageAppState extends State<DataUsageApp> {
     return _dailyUsage.asMap().entries.map((entry) {
       return BarChartGroupData(
         x: entry.key,
-        barRods: [
-          BarRod(
+        barRodStackItems: [
+          BarRodStackItem(0, toY: 
             toY: entry.value['usage'],
             color: const Color(0xFF00BCD4),
             width: 20,

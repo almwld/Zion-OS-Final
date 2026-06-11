@@ -124,8 +124,8 @@ class _NetworkToolsAppState extends State<NetworkToolsApp> {
 ╠══════════════════════════════════════════════════════════════╣
 ║ Local IP: $localIp
 ║ Public IP: $publicIp
-║ Gateway: ${await _getGateway()}
-║ DNS Servers: ${await _getDnsServers()}
+║ Gateway: ${_gateway}
+║ DNS Servers: ${_dnsServers}
 ╚══════════════════════════════════════════════════════════════╝
 ''';
         _isIpInfo = false;
@@ -415,7 +415,7 @@ class _NetworkToolsAppState extends State<NetworkToolsApp> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.ip, color: Color(0xFF00BCD4)),
+                    Icon(Icons.network_wifi, color: Color(0xFF00BCD4)),
                     SizedBox(width: 8),
                     Text('IP Information', style: TextStyle(color: Color(0xFF00BCD4), fontWeight: FontWeight.bold)),
                   ],

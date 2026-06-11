@@ -53,7 +53,7 @@ class _SystemInfoAppState extends State<SystemInfoApp> {
         'ID': androidInfo.id,
         'Tags': androidInfo.tags,
         'Type': androidInfo.type,
-        'User': androidInfo.user,
+        
       };
     }
   }
