@@ -14,21 +14,15 @@ import 'apps/settings_app.dart';
 import 'apps/file_manager.dart';
 import 'apps/web_browser.dart';
 import 'apps/text_analyzer.dart';
-import 'apps/qr_scanner.dart';
-import 'apps/alarms_clock.dart';
 import 'apps/calculator.dart';
 import 'apps/notes_app.dart';
 import 'apps/weather_app.dart';
 import 'apps/currency_converter.dart';
 import 'apps/translator_app.dart';
 import 'apps/maps_app.dart';
-import 'apps/gallery_app.dart';
-import 'apps/video_player_app.dart';
-import 'apps/documents_app.dart';
 import 'apps/radio_app.dart';
 import 'apps/file_sharing.dart';
 import 'apps/email_client.dart';
-import 'apps/calendar_app.dart';
 import 'apps/date_calculator.dart';
 import 'apps/unit_converter.dart';
 import 'apps/percentage_calculator.dart';
@@ -77,20 +71,14 @@ class _ZionDesktopState extends State<ZionDesktop> {
     {"name": "UNIT CONV", "icon": Icons.science, "category": "TOOLS", "screen": const UnitConverterApp()},
     {"name": "PERCENT", "icon": Icons.percent, "category": "TOOLS", "screen": const PercentageCalculatorApp()},
     {"name": "DATE CALC", "icon": Icons.calculate, "category": "TOOLS", "screen": const DateCalculatorApp()},
-    {"name": "QR SCANNER", "icon": Icons.qr_code_scanner, "category": "TOOLS", "screen": const QRScannerApp()},
     {"name": "NOTES", "icon": Icons.note, "category": "TOOLS", "screen": const NotesApp()},
     {"name": "WEATHER", "icon": Icons.wb_sunny, "category": "TOOLS", "screen": const WeatherApp()},
     {"name": "CURRENCY", "icon": Icons.attach_money, "category": "TOOLS", "screen": const CurrencyConverterApp()},
     {"name": "TRANSLATOR", "icon": Icons.translate, "category": "TOOLS", "screen": const TranslatorApp()},
     {"name": "MAPS", "icon": Icons.map, "category": "TOOLS", "screen": const MapsApp()},
-    {"name": "GALLERY", "icon": Icons.photo_library, "category": "TOOLS", "screen": const GalleryApp()},
-    {"name": "VIDEO", "icon": Icons.play_circle_filled, "category": "TOOLS", "screen": const VideoPlayerApp()},
-    {"name": "DOCUMENTS", "icon": Icons.description, "category": "TOOLS", "screen": const DocumentsApp()},
     {"name": "RADIO", "icon": Icons.radio, "category": "TOOLS", "screen": const RadioApp()},
     {"name": "SHARE", "icon": Icons.share, "category": "TOOLS", "screen": const FileSharingApp()},
     {"name": "EMAIL", "icon": Icons.email, "category": "TOOLS", "screen": const EmailClient()},
-    {"name": "CALENDAR", "icon": Icons.calendar_today, "category": "TOOLS", "screen": const CalendarApp()},
-    {"name": "CLOCK", "icon": Icons.access_time, "category": "TOOLS", "screen": const AlarmsClockApp()},
     {"name": "SETTINGS", "icon": Icons.settings, "category": "TOOLS", "screen": const SettingsApp()},
   ];
 
