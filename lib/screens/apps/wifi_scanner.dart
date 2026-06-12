@@ -20,20 +20,19 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
   void initState() {
     super.initState();
     _checkPermissions();
-    _getCurrentWiFi();
   }
 
   Future<void> _checkPermissions() async {
-    final status = await Permission.location.status;
-    if (status.isDenied) {
+    final locationStatus = await Permission.location.status;
+    if (!locationStatus.isGranted) {
       await Permission.location.request();
     }
-    final newStatus = await Permission.location.status;
-    setState(() {
-      _hasPermission = newStatus.isGranted;
-    });
+    _hasPermission = await Permission.location.isGranted;
     if (_hasPermission) {
+      _getCurrentWiFi();
       _scanWiFi();
+    } else {
+      setState(() => _errorMessage = 'Location permission required to scan WiFi');
     }
   }
 
@@ -42,19 +41,15 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
       final result = await Process.run('dumpsys', ['wifi'], runInShell: true);
       final output = result.stdout.toString();
       final match = RegExp(r'mWifiInfo.*?SSID: "([^"]+)"', caseSensitive: false).firstMatch(output);
-      if (match != null) {
-        setState(() {
-          _currentWiFi = match.group(1) ?? 'Unknown';
-        });
+      if (match != null && match.group(1) != null && match.group(1) != '<unknown ssid>') {
+        setState(() => _currentWiFi = match.group(1)!);
       }
     } catch (_) {}
   }
 
   Future<void> _scanWiFi() async {
     if (!_hasPermission) {
-      setState(() {
-        _errorMessage = 'Location permission required to scan WiFi networks';
-      });
+      setState(() => _errorMessage = 'Location permission required');
       return;
     }
 
@@ -65,15 +60,9 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
     });
 
     try {
-      // Force WiFi scan
-      await Process.run('cmd', ['wifi', 'force-scan'], runInShell: true);
-      await Future.delayed(const Duration(seconds: 2));
-      
-      // Get scan results
       final result = await Process.run('dumpsys', ['wifi'], runInShell: true);
       final output = result.stdout.toString();
       
-      // Parse WiFi networks
       final regex = RegExp(r'SSID: "([^"]+)".*?BSSID: ([0-9a-f:]+).*?RSSI: (-?\d+)', caseSensitive: false);
       final matches = regex.allMatches(output);
       
@@ -87,7 +76,6 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
             'ssid': ssid,
             'bssid': bssid ?? 'Unknown',
             'signal': rssi ?? '0',
-            'security': _getSecurityType(output, bssid ?? ''),
           });
         }
       }
@@ -101,18 +89,10 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error scanning networks: $e';
+        _errorMessage = 'Error: $e';
         _isScanning = false;
       });
     }
-  }
-
-  String _getSecurityType(String output, String bssid) {
-    if (output.contains('WPA3')) return 'WPA3';
-    if (output.contains('WPA2')) return 'WPA2';
-    if (output.contains('WPA')) return 'WPA';
-    if (output.contains('WEP')) return 'WEP';
-    return 'Open';
   }
 
   int _getSignalStrength(int rssi) {
@@ -120,15 +100,6 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
     if (rssi > -60) return 3;
     if (rssi > -70) return 2;
     return 1;
-  }
-
-  IconData _getSignalIcon(int strength) {
-    switch (strength) {
-      case 4: return Icons.signal_cellular_alt;
-      case 3: return Icons.signal_cellular_alt;
-      case 2: return Icons.signal_cellular_alt;
-      default: return Icons.signal_cellular_alt;
-    }
   }
 
   @override
@@ -146,13 +117,11 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
           IconButton(
             icon: const Icon(Icons.refresh, color: Color(0xFF00BCD4)),
             onPressed: _scanWiFi,
-            tooltip: 'Scan networks',
           ),
         ],
       ),
       body: Column(
         children: [
-          // Permission status
           if (!_hasPermission)
             Container(
               margin: const EdgeInsets.all(16),
@@ -179,7 +148,6 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
               ),
             ),
           
-          // Current WiFi Status
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
@@ -217,7 +185,6 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
             ),
           ),
           
-          // Error Message
           if (_errorMessage.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(12),
@@ -235,9 +202,6 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
               ),
             ),
           
-          const SizedBox(height: 8),
-          
-          // Networks List
           Expanded(
             child: _isScanning
                 ? const Center(
@@ -258,8 +222,6 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
                             Icon(Icons.wifi_off, size: 64, color: Colors.white24),
                             SizedBox(height: 16),
                             Text('No networks found', style: TextStyle(color: Colors.white38)),
-                            SizedBox(height: 8),
-                            Text('Tap SCAN to search for networks', style: TextStyle(color: Colors.white24, fontSize: 12)),
                           ],
                         ),
                       )
@@ -281,7 +243,11 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
                             ),
                             child: Row(
                               children: [
-                                Icon(_getSignalIcon(strength), color: const Color(0xFF00BCD4), size: 28),
+                                Icon(
+                                  strength > 2 ? Icons.signal_cellular_alt : Icons.signal_cellular_alt,
+                                  color: strength > 2 ? Colors.green : Colors.orange,
+                                  size: 28,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
@@ -292,25 +258,9 @@ class _WiFiScannerAppState extends State<WiFiScannerApp> {
                                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF00BCD4).withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              network['security']!,
-                                              style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 10),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            network['bssid']!,
-                                            style: const TextStyle(color: Colors.white38, fontSize: 10),
-                                          ),
-                                        ],
+                                      Text(
+                                        network['bssid']!,
+                                        style: const TextStyle(color: Colors.white38, fontSize: 10),
                                       ),
                                     ],
                                   ),

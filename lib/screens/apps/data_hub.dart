@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-class DataHubApp extends StatelessWidget {
-  const DataHubApp({super.key});
+class ${hub}App extends StatelessWidget {
+  const ${hub}App({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // خلفية سوداء صلبة
       appBar: AppBar(
-        title: const Text('Data Hub', style: TextStyle(color: Color(0xFF00BCD4))),
+        title: Text('${hub.replaceAll('_', ' ').toUpperCase()}', style: const TextStyle(color: Color(0xFF00BCD4))),
         backgroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF00BCD4)),
@@ -16,7 +16,10 @@ class DataHubApp extends StatelessWidget {
         ),
       ),
       body: const Center(
-        child: Text('Data Hub - Coming Soon', style: TextStyle(color: Colors.white)),
+        child: Text(
+          'Coming Soon',
+          style: TextStyle(color: Color(0xFF00BCD4), fontSize: 18),
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import '../widgets/battery_info_dialog.dart';
 import '../widgets/quick_settings_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -64,6 +65,7 @@ class _ZionDesktopState extends State<ZionDesktop> with SingleTickerProviderStat
   final GlobalKey<FloatingWindowManagerState> _windowManagerKey = GlobalKey();
   String _currentTime = "";
   int _selectedIndex = 0;
+  double _iconSize = 58.0;
   bool _showRadarChart = true;
   bool _showQuickSettings = false;
   late AnimationController _animationController;
@@ -288,8 +290,15 @@ class _ZionDesktopState extends State<ZionDesktop> with SingleTickerProviderStat
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.battery_full, color: const Color(0xFF00BCD4), size: 16),
-                                const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => const BatteryInfoDialog(),
+                          );
+                        },
+                        child: Icon(Icons.battery_full, color: const Color(0xFF00BCD4), size: 16),
+                      ),
                                 Icon(Icons.network_wifi, color: const Color(0xFF00BCD4), size: 16),
                                 const SizedBox(width: 12),
                                 Text(

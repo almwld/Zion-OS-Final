@@ -119,3 +119,28 @@ class QuickSettingsPanel extends StatelessWidget {
     );
   }
 }
+  Widget _buildWallpaperButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const WallpaperSelector()),
+        );
+      },
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFF00BCD4).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.wallpaper, color: Color(0xFF00BCD4), size: 24),
+          ),
+          const SizedBox(height: 4),
+          const Text('Wallpaper', style: TextStyle(color: Colors.white70, fontSize: 10)),
+        ],
+      ),
+    );
+  }
