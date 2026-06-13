@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import 'screens/settings_screen.dart';
+import 'providers/theme_provider.dart';
 import 'screens/lock_screen.dart';
 
 void main() async {
@@ -33,20 +33,12 @@ class ZionOSApp extends StatelessWidget {
           return MaterialApp(
             title: 'Zion OS 2027',
             debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              brightness: themeProvider.isDarkMode ? Brightness.dark : Brightness.light,
-              primaryColor: themeProvider.primaryColor,
-              scaffoldBackgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.grey[100],
-              fontFamily: 'Cairo',
-              textTheme: TextTheme(
-                bodyLarge: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87),
-                bodyMedium: TextStyle(color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54),
-              ),
-            ),
+            theme: themeProvider.getThemeData(),
             localizationsDelegates: [
               EasyLocalization.of(context)!.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: context.supportedLocales,
             locale: context.locale,
