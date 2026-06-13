@@ -11,7 +11,7 @@ void main() async {
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
-      path: 'assets/translations',
+      path: 'assets/translations', // يجب أن يكون المجلد يحتوي على ar.json و en.json
       fallbackLocale: const Locale('en'),
       startLocale: const Locale('ar'),
       child: const ZionOSApp(),
@@ -35,7 +35,7 @@ class ZionOSApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: themeProvider.getThemeData(),
             localizationsDelegates: [
-              EasyLocalization.of(context)!.delegate,
+              context.localizationDelegates,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,

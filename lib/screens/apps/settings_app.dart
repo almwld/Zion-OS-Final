@@ -78,7 +78,7 @@ class _SettingsAppState extends State<SettingsApp> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('change_pin'.tr(), style: TextStyle(color: _themeProvider.primaryColor)),
+        title: Text('change_pin', style: TextStyle(color: _themeProvider.primaryColor)),
         backgroundColor: _themeProvider.isDarkMode ? Colors.grey[900] : Colors.white,
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -88,7 +88,7 @@ class _SettingsAppState extends State<SettingsApp> {
               obscureText: true,
               style: TextStyle(color: _themeProvider.isDarkMode ? Colors.white : Colors.black87),
               decoration: InputDecoration(
-                labelText: 'current_pin'.tr(),
+                labelText: 'current_pin',
                 labelStyle: TextStyle(color: _themeProvider.primaryColor),
                 border: const OutlineInputBorder(),
               ),
@@ -99,7 +99,7 @@ class _SettingsAppState extends State<SettingsApp> {
               obscureText: true,
               style: TextStyle(color: _themeProvider.isDarkMode ? Colors.white : Colors.black87),
               decoration: InputDecoration(
-                labelText: 'new_pin'.tr(),
+                labelText: 'new_pin',
                 labelStyle: TextStyle(color: _themeProvider.primaryColor),
                 border: const OutlineInputBorder(),
               ),
@@ -110,7 +110,7 @@ class _SettingsAppState extends State<SettingsApp> {
               obscureText: true,
               style: TextStyle(color: _themeProvider.isDarkMode ? Colors.white : Colors.black87),
               decoration: InputDecoration(
-                labelText: 'confirm_pin'.tr(),
+                labelText: 'confirm_pin',
                 labelStyle: TextStyle(color: _themeProvider.primaryColor),
                 border: const OutlineInputBorder(),
               ),
@@ -120,7 +120,7 @@ class _SettingsAppState extends State<SettingsApp> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('cancel'.tr(), style: TextStyle(color: _themeProvider.primaryColor)),
+            child: Text('cancel', style: TextStyle(color: _themeProvider.primaryColor)),
           ),
           TextButton(
             onPressed: () async {
@@ -144,7 +144,7 @@ class _SettingsAppState extends State<SettingsApp> {
                 );
               }
             },
-            child: Text('save'.tr(), style: TextStyle(color: _themeProvider.primaryColor)),
+            child: Text('save', style: TextStyle(color: _themeProvider.primaryColor)),
           ),
         ],
       ),
@@ -158,7 +158,7 @@ class _SettingsAppState extends State<SettingsApp> {
     return Scaffold(
       backgroundColor: theme.isDarkMode ? Colors.black : Colors.grey[50],
       appBar: AppBar(
-        title: Text('settings'.tr(), style: TextStyle(color: theme.primaryColor)),
+        title: Text('settings', style: TextStyle(color: theme.primaryColor)),
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: theme.primaryColor),
@@ -167,24 +167,24 @@ class _SettingsAppState extends State<SettingsApp> {
       ),
       body: ListView(
         children: [
-          _buildSection('appearance'.tr(), Icons.palette, theme),
+          _buildSection('appearance', Icons.palette, theme),
           _buildThemeColorRow(theme),
           _buildLanguageRow(theme),
           _buildSliderRow('Font Size', _fontSize, 10, 20, _changeFontSize, theme),
           _buildSliderRow('Icon Size', _iconSize, 48, 78, _changeIconSize, theme),
           SwitchListTile(
-            title: Text('dark_mode'.tr(), style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87)),
+            title: Text('dark_mode', style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87)),
             value: theme.isDarkMode,
             onChanged: (_) => theme.toggleTheme(),
             activeColor: theme.primaryColor,
           ),
-          _buildSection('security'.tr(), Icons.security, theme),
-          _buildInfoTile('change_pin'.tr(), 'update_security_pin'.tr(), Icons.lock, _showChangePinDialog, theme),
-          _buildInfoTile('biometric'.tr(), 'enable_fingerprint'.tr(), Icons.fingerprint, () {}, theme),
-          _buildInfoTile('encryption'.tr(), 'aes256_active'.tr(), Icons.security, () {}, theme),
-          _buildSection('about'.tr(), Icons.info, theme),
-          _buildInfoTile('version'.tr(), 'Zion OS 4.0.0', Icons.info, () {}, theme),
-          _buildInfoTile('developer'.tr(), 'Zion Security Team', Icons.code, () {}, theme),
+          _buildSection('security', Icons.security, theme),
+          _buildInfoTile('change_pin', 'update_security_pin', Icons.lock, _showChangePinDialog, theme),
+          _buildInfoTile('biometric', 'enable_fingerprint', Icons.fingerprint, () {}, theme),
+          _buildInfoTile('encryption', 'aes256_active', Icons.security, () {}, theme),
+          _buildSection('about', Icons.info, theme),
+          _buildInfoTile('version', 'Zion OS 4.0.0', Icons.info, () {}, theme),
+          _buildInfoTile('developer', 'Zion Security Team', Icons.code, () {}, theme),
         ],
       ),
     );
@@ -214,7 +214,7 @@ class _SettingsAppState extends State<SettingsApp> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('theme_color'.tr(), style: TextStyle(color: theme.primaryColor)),
+          Text('theme_color', style: TextStyle(color: theme.primaryColor)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 12,
@@ -248,7 +248,7 @@ class _SettingsAppState extends State<SettingsApp> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('language'.tr(), style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87)),
+          Text('language', style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87)),
           DropdownButton<String>(
             value: _selectedLanguage,
             dropdownColor: Colors.black,

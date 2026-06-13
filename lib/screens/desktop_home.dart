@@ -103,7 +103,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
                       ),
                       child: Center(
                         child: Text(
-                          _categories[index]['name'].tr(),
+                          _categories[index]['name'],
                           style: TextStyle(color: theme.primaryColor),
                         ),
                       ),
@@ -147,7 +147,7 @@ class _ZionDesktopState extends State<ZionDesktop> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          app['name'].tr(),
+                          app['name'],
                           style: theme.getThemeData().textTheme.bodySmall,
                         ),
                       ],

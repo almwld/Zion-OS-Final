@@ -118,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('change_pin'.tr(), style: const TextStyle(color: Color(0xFF00BCD4))),
+        title: Text('change_pin', style: const TextStyle(color: Color(0xFF00BCD4))),
         backgroundColor: Colors.black,
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -128,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               obscureText: true,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                labelText: 'current_pin'.tr(),
+                labelText: 'current_pin',
                 labelStyle: const TextStyle(color: Color(0xFF00BCD4)),
                 border: const OutlineInputBorder(),
               ),
@@ -139,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               obscureText: true,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                labelText: 'new_pin'.tr(),
+                labelText: 'new_pin',
                 labelStyle: const TextStyle(color: Color(0xFF00BCD4)),
                 border: const OutlineInputBorder(),
               ),
@@ -150,7 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               obscureText: true,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                labelText: 'confirm_pin'.tr(),
+                labelText: 'confirm_pin',
                 labelStyle: const TextStyle(color: Color(0xFF00BCD4)),
                 border: const OutlineInputBorder(),
               ),
@@ -160,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('cancel'.tr(), style: const TextStyle(color: Colors.white54)),
+            child: Text('cancel', style: const TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () async {
@@ -184,7 +184,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
               }
             },
-            child: Text('save'.tr(), style: const TextStyle(color: Color(0xFF00BCD4))),
+            child: Text('save', style: const TextStyle(color: Color(0xFF00BCD4))),
           ),
         ],
       ),
@@ -199,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.grey[100],
       appBar: AppBar(
-        title: Text('settings'.tr(), style: TextStyle(color: theme.primaryColor)),
+        title: Text('settings', style: TextStyle(color: theme.primaryColor)),
         backgroundColor: isDark ? Colors.black : Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: theme.primaryColor),
@@ -208,30 +208,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          _buildSection('appearance'.tr(), Icons.palette, theme),
+          _buildSection('appearance', Icons.palette, theme),
           _buildThemeColorRow(theme),
           _buildLanguageRow(theme),
           _buildSliderRow('Font Size', _fontSize.toDouble(), 10, 20, (v) => _changeFontSize(v.toInt()), theme),
           _buildSliderRow('Icon Size', _iconSize, 48, 78, _changeIconSize, theme),
-          _buildSwitchTile('dark_mode'.tr(), _darkMode, (v) {
+          _buildSwitchTile('dark_mode', _darkMode, (v) {
             setState(() { _darkMode = v; _saveSetting('dark_mode', v); _applyTheme(); });
           }, theme),
-          _buildSwitchTile('notifications'.tr(), _notifications, (v) {
+          _buildSwitchTile('notifications', _notifications, (v) {
             setState(() { _notifications = v; _saveSetting('notifications', v); });
           }, theme),
-          _buildSwitchTile('sound_effects'.tr(), _soundEffects, (v) {
+          _buildSwitchTile('sound_effects', _soundEffects, (v) {
             setState(() { _soundEffects = v; _saveSetting('sound_effects', v); });
           }, theme),
-          _buildSwitchTile('vibration'.tr(), _vibration, (v) {
+          _buildSwitchTile('vibration', _vibration, (v) {
             setState(() { _vibration = v; _saveSetting('vibration', v); });
           }, theme),
-          _buildSection('security'.tr(), Icons.security, theme),
-          _buildInfoTile('change_pin'.tr(), 'update_security_pin'.tr(), Icons.lock, _showChangePinDialog, theme),
-          _buildInfoTile('biometric'.tr(), 'enable_fingerprint'.tr(), Icons.fingerprint, () {}, theme),
-          _buildInfoTile('encryption'.tr(), 'aes256_active'.tr(), Icons.security, () {}, theme),
-          _buildSection('about'.tr(), Icons.info, theme),
-          _buildInfoTile('version'.tr(), 'Zion OS 4.0.0', Icons.info, () {}, theme),
-          _buildInfoTile('developer'.tr(), 'Zion Security Team', Icons.code, () {}, theme),
+          _buildSection('security', Icons.security, theme),
+          _buildInfoTile('change_pin', 'update_security_pin', Icons.lock, _showChangePinDialog, theme),
+          _buildInfoTile('biometric', 'enable_fingerprint', Icons.fingerprint, () {}, theme),
+          _buildInfoTile('encryption', 'aes256_active', Icons.security, () {}, theme),
+          _buildSection('about', Icons.info, theme),
+          _buildInfoTile('version', 'Zion OS 4.0.0', Icons.info, () {}, theme),
+          _buildInfoTile('developer', 'Zion Security Team', Icons.code, () {}, theme),
         ],
       ),
     );
@@ -261,7 +261,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('theme_color'.tr(), style: TextStyle(color: theme.primaryColor)),
+          Text('theme_color', style: TextStyle(color: theme.primaryColor)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 12,
@@ -295,7 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('language'.tr(), style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87)),
+          Text('language', style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87)),
           DropdownButton<String>(
             value: _selectedLanguage,
             dropdownColor: Colors.black,

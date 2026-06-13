@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../providers/theme_provider.dart';
 import 'desktop_home.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class LockScreen extends StatefulWidget {
   const LockScreen({super.key});
@@ -13,10 +13,9 @@ class LockScreen extends StatefulWidget {
 
 class _LockScreenState extends State<LockScreen> {
   final TextEditingController _pinController = TextEditingController();
-  final String _correctPin = "1234";
-  String _errorMessage = "";
-  String _currentTime = "";
-  String _currentDate = "";
+  String _errorMessage = '';
+  String _currentTime = '';
+  String _currentDate = '';
 
   @override
   void initState() {
@@ -38,14 +37,12 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void _unlock() {
-    if (_pinController.text == _correctPin) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ZionDesktop()),
-      );
+    final provider = Provider.of<ThemeProvider>(context, listen: false);
+    if (provider.validatePin(_pinController.text)) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ZionDesktop()));
     } else {
       setState(() {
-        _errorMessage = "security.pin_incorrect".tr();
+        _errorMessage = 'PIN Incorrect';
         _pinController.clear();
       });
     }
@@ -53,140 +50,98 @@ class _LockScreenState extends State<LockScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment.center,
             radius: 1.2,
-            colors: theme.isDarkMode
-                ? [const Color(0xFF0D2E3B), const Color(0xFF03090C)]
-                : [const Color(0xFFE0F7FA), Colors.white],
+            colors: isDark ? [const Color(0xFF0A2E38), Colors.black] : [const Color(0xFFE0F7FA), Colors.white],
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.5)],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Text("Z", style: TextStyle(fontSize: 55, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    "app_name".tr(),
-                    style: theme.getThemeData().textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: 50),
-                  Text(_currentTime, style: theme.getThemeData().textTheme.displayLarge),
-                  const SizedBox(height: 8),
-                  Text(_currentDate, style: theme.getThemeData().textTheme.bodyMedium),
-                  const SizedBox(height: 50),
-                  Container(
-                    width: screenWidth * 0.65,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: theme.isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(40),
-                      border: Border.all(color: theme.primaryColor.withOpacity(0.5)),
-                    ),
-                    child: TextField(
-                      controller: _pinController,
-                      obscureText: true,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: theme.primaryColor, fontSize: 24, letterSpacing: 10),
-                      keyboardType: TextInputType.number,
-                      maxLength: 4,
-                      decoration: const InputDecoration(
-                        hintText: "••••",
-                        border: InputBorder.none,
-                        counterText: "",
-                      ),
-                      onSubmitted: (_) => _unlock(),
-                    ),
-                  ),
-                  if (_errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 15),
-                      child: Text(_errorMessage, style: const TextStyle(color: Colors.red)),
-                    ),
-                  const SizedBox(height: 40),
-                  SizedBox(
-                    width: screenWidth * 0.8,
-                    child: GridView.count(
-                      shrinkWrap: true,
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 15,
-                      crossAxisSpacing: 20,
-                      childAspectRatio: 1.1,
-                      children: [
-                        _buildButton("1", theme), _buildButton("2", theme), _buildButton("3", theme),
-                        _buildButton("4", theme), _buildButton("5", theme), _buildButton("6", theme),
-                        _buildButton("7", theme), _buildButton("8", theme), _buildButton("9", theme),
-                        _buildButton("", theme), _buildButton("0", theme), _buildDeleteButton(theme),
-                      ],
-                    ),
-                  ),
-                ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100, height: 100,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF006064)]),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(child: Text("Z", style: TextStyle(fontSize: 55, fontWeight: FontWeight.bold, color: Colors.white))),
               ),
-            ),
+              const SizedBox(height: 20),
+              Text(_currentTime, style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Color(0xFF00BCD4))),
+              const SizedBox(height: 8),
+              Text(_currentDate, style: const TextStyle(fontSize: 16, color: Colors.white70)),
+              const SizedBox(height: 50),
+              Container(
+                width: 280,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.5)),
+                ),
+                child: TextField(
+                  controller: _pinController,
+                  obscureText: true,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 24, letterSpacing: 10),
+                  keyboardType: TextInputType.number,
+                  maxLength: 4,
+                  decoration: const InputDecoration(
+                    hintText: "••••",
+                    hintStyle: TextStyle(color: Colors.white30),
+                    border: InputBorder.none,
+                    counterText: "",
+                  ),
+                  onSubmitted: (_) => _unlock(),
+                ),
+              ),
+              if (_errorMessage.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 15), child: Text(_errorMessage, style: const TextStyle(color: Colors.red))),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: 300,
+                child: GridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 15,
+                  crossAxisSpacing: 15,
+                  children: [
+                    _buildButton("1"), _buildButton("2"), _buildButton("3"),
+                    _buildButton("4"), _buildButton("5"), _buildButton("6"),
+                    _buildButton("7"), _buildButton("8"), _buildButton("9"),
+                    _buildButton(""), _buildButton("0"), _buildButton("⌫"),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildButton(String num, ThemeProvider theme) {
+  Widget _buildButton(String num) {
     return GestureDetector(
       onTap: () {
-        if (_pinController.text.length < 4) {
+        if (num == "⌫") {
+          if (_pinController.text.isNotEmpty) _pinController.text = _pinController.text.substring(0, _pinController.text.length - 1);
+        } else if (num.isNotEmpty && _pinController.text.length < 4) {
           _pinController.text += num;
           if (_pinController.text.length == 4) _unlock();
         }
       },
       child: Container(
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.primaryColor.withOpacity(0.3)),
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFF00BCD4).withOpacity(0.3)),
         ),
-        child: Center(
-          child: Text(num, style: TextStyle(color: theme.primaryColor, fontSize: 28, fontWeight: FontWeight.bold)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeleteButton(ThemeProvider theme) {
-    return GestureDetector(
-      onTap: () {
-        if (_pinController.text.isNotEmpty) {
-          _pinController.text = _pinController.text.substring(0, _pinController.text.length - 1);
-        }
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.primaryColor.withOpacity(0.3)),
-        ),
-        child: Center(
-          child: Icon(Icons.backspace, color: theme.primaryColor, size: 28),
-        ),
+        child: Center(child: Text(num, style: const TextStyle(color: Color(0xFF00BCD4), fontSize: 28, fontWeight: FontWeight.bold))),
       ),
     );
   }

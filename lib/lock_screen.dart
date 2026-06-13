@@ -43,7 +43,7 @@ class _LockScreenState extends State<LockScreen> {
     if (_enteredPin == savedPin) {
       if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ResponsiveDesktop()));
     } else {
-      setState(() { _errorMessage = 'lock_screen.incorrect_pin'.tr(); _enteredPin = ''; _isLoading = false; });
+      setState(() { _errorMessage = 'lock_screen.incorrect_pin'; _enteredPin = ''; _isLoading = false; });
     }
   }
 
